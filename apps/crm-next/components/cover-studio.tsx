@@ -76,6 +76,39 @@ function seekVideo(video: HTMLVideoElement, time: number): Promise<void> {
   });
 }
 
+async function waitForDecodedVideoFrame(video: HTMLVideoElement): Promise<void> {
+  const videoWithFrameCallback = video as HTMLVideoElement & {
+    requestVideoFrameCallback?: (callback: () => void) => number;
+  };
+
+  await new Promise<void>((resolve, reject) => {
+    let settled = false;
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      video.removeEventListener('error', handleError);
+      callback();
+    };
+    const handleError = () => finish(() => reject(new Error('Não foi possível decodificar o frame deste vídeo.')));
+    const handleFrame = () => {
+      if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        window.requestAnimationFrame(handleFrame);
+        return;
+      }
+      finish(resolve);
+    };
+    const timeout = window.setTimeout(() => finish(() => reject(new Error('O navegador não conseguiu preparar o frame do vídeo.'))), 3000);
+
+    video.addEventListener('error', handleError, { once: true });
+    if (videoWithFrameCallback.requestVideoFrameCallback) {
+      videoWithFrameCallback.requestVideoFrameCallback(handleFrame);
+    } else {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(handleFrame));
+    }
+  });
+}
+
 async function captureVideoFrames(objectUrl: string): Promise<FrameCandidate[]> {
   const video = document.createElement('video');
   video.preload = 'auto';
@@ -89,6 +122,10 @@ async function captureVideoFrames(objectUrl: string): Promise<FrameCandidate[]> 
   const candidates: FrameCandidate[] = [];
   for (const [index, time] of times.entries()) {
     await seekVideo(video, time);
+    await waitForDecodedVideoFrame(video);
+    if (video.videoWidth <= 0 || video.videoHeight <= 0) {
+      throw new Error('O navegador não conseguiu decodificar as dimensões deste vídeo.');
+    }
     const canvas = document.createElement('canvas');
     canvas.width = 540;
     canvas.height = 960;

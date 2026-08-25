@@ -46,6 +46,12 @@ test('componente expõe o fluxo guiado e mantém a mídia local', async () => {
   }
 });
 
+test('captura aguarda um frame de vídeo efetivamente decodificado', async () => {
+  const source = await readFile(new URL('../apps/crm-next/components/cover-studio.tsx', import.meta.url), 'utf8');
+  assert.match(source, /requestVideoFrameCallback/);
+  assert.match(source, /readyState/);
+});
+
 test('rota e dashboard apontam para o estúdio de capas', async () => {
   const route = await readFile(new URL('../apps/crm-next/app/capas/page.tsx', import.meta.url), 'utf8');
   const home = await readFile(new URL('../apps/crm-next/app/page.tsx', import.meta.url), 'utf8');

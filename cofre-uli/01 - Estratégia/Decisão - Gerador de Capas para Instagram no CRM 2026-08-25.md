@@ -91,12 +91,20 @@ Uma usuária autenticada deve conseguir, sem conhecimento de design, selecionar 
 
 ### Validação local
 
-- `npm --prefix apps/crm-next test`: aprovado, 7 testes;
+- `npm --prefix apps/crm-next test`: aprovado, 8 testes;
 - `npm --prefix apps/crm-next run lint`: aprovado;
 - `npm --prefix apps/crm-next run build`: aprovado;
 - `git diff --check`: aprovado.
 
 O build exibiu apenas o aviso já existente de migração da convenção `middleware` para `proxy` no Next.js; não houve erro de compilação, tipagem ou geração das rotas.
+
+### Correção após teste real — 2026-08-25
+
+O primeiro teste com vídeo mostrou thumbnails e prévia pretos, embora a mídia e os textos fossem reconhecidos. A causa foi a sincronização da captura: o evento `seeked` podia ocorrer antes de o frame estar efetivamente decodificado e disponível para o Canvas.
+
+A captura agora aguarda `requestVideoFrameCallback`, utiliza dois ciclos de renderização como fallback em navegadores sem essa API e valida `readyState`, `videoWidth` e `videoHeight` antes de executar `drawImage`. O fluxo visual, a seleção automática do frame central, os textos e o processamento local permanecem inalterados.
+
+O teste de contrato que protege essa regra foi adicionado em `tests/cover-studio.test.mjs`.
 
 ### Publicação verificada
 
