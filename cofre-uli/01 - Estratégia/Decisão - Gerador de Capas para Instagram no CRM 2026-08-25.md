@@ -120,11 +120,12 @@ O guia `GUIA SAFE ZONE · NÃO EXPORTADO` aparece na prévia principal da Etapa 
 
 ### Publicação verificada
 
-- commits publicados na branch `main`: `e5e5edf` (entrega do módulo), `e9a9149` (lint e navegação interna), `2074e7e` (sincronização do frame decodificado), `5652a57` (especificação de posições e Safe Zone) e `7305277` (plano de implementação);
+- commits publicados na branch `main`: `e5e5edf` (entrega do módulo), `e9a9149` (lint e navegação interna), `2074e7e` (sincronização do frame decodificado), `5652a57` (especificação de posições e Safe Zone), `7305277` (plano de implementação) e `234ada6` (posições, Safe Zone e renderização);
 - `https://crm.ulizarzana.com/` redireciona para `/login` quando necessário;
 - `https://crm.ulizarzana.com/login` responde `200 OK`;
 - sessão autenticada verificou a Visão Geral com o acesso **Criar capa para Instagram**;
 - sessão autenticada verificou a rota `/capas`, o fluxo de quatro etapas e a mensagem de processamento local.
 - após a publicação de `2074e7e`, a rota autenticada `/capas` foi recarregada publicamente e permaneceu disponível com o módulo de capas.
+- após a publicação de `234ada6`, `/login` respondeu `200 OK` e `/capas` respondeu `307 → /login` sem sessão, confirmando o deployment público do CRM.
 
 O deployment do CRM permanece no fluxo Node.js conectado ao GitHub; não foi necessário FTP para esta atualização. A resposta pública após o commit final permanece `200 OK` em `/login` e `307 → /login` em `/capas` sem sessão.
