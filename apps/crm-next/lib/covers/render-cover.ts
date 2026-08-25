@@ -91,6 +91,7 @@ function drawLines(
   context.font = `${weight} ${layout.fontSize}px ${family}`;
   context.fillStyle = color;
   context.textBaseline = 'top';
+  context.textAlign = 'center';
   layout.lines.forEach((line, index) => context.fillText(line, x, y + index * layout.lineHeight));
   return y + layout.lines.length * layout.lineHeight;
 }
@@ -152,7 +153,7 @@ export async function renderCover(options: {
 
   drawBackground(context, image, options.position);
 
-  const x = META_SAFE_ZONE.left;
+  const x = META_SAFE_ZONE.left + META_SAFE_ZONE.width / 2;
   const { contextY, headlineY } = COPY_POSITION_ANCHORS[options.position];
   const contextLayout = fitText(context, options.copy.context, {
     family: '"Source Sans 3", sans-serif',
@@ -181,9 +182,10 @@ export async function renderCover(options: {
 
   drawLines(context, contextLayout, options.copy.context, x, contextY, COLORS.champagne, '"Source Sans 3", sans-serif', 600);
   const headlineEnd = drawLines(context, headlineLayout, options.copy.headline, x, headlineY, COLORS.paper, '"Libre Baskerville", Georgia, serif', 700);
+  const headlineWidth = context.measureText(headlineLayout.lines[headlineLayout.lines.length - 1] ?? '').width;
   context.fillStyle = COLORS.champagne;
   context.beginPath();
-  context.arc(x + Math.min(MAX_TEXT_WIDTH, context.measureText(headlineLayout.lines[headlineLayout.lines.length - 1] ?? '').width) + 22, headlineEnd - headlineLayout.lineHeight / 2, 8, 0, Math.PI * 2);
+  context.arc(x + Math.min(MAX_TEXT_WIDTH, headlineWidth) / 2 + 22, headlineEnd - headlineLayout.lineHeight / 2, 8, 0, Math.PI * 2);
   context.fill();
   drawLines(context, subtitleLayout, options.copy.subtitle, x, headlineEnd + 44, COLORS.champagne, '"Source Sans 3", sans-serif', 500);
 

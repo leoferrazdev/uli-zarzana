@@ -97,7 +97,7 @@ h2 { margin: 8px 0 28px; font-family: var(--font-serif); font-size: 25px; letter
 .cover-preview-shade.is-top { background: linear-gradient(to bottom, rgb(51 42 38 / 86%), rgb(51 42 38 / 64%) 38%, rgb(51 42 38 / 12%) 78%, transparent); }
 .cover-preview-shade.is-center { background: radial-gradient(circle at center, rgb(51 42 38 / 72%), rgb(51 42 38 / 52%) 38%, rgb(51 42 38 / 8%) 82%, transparent); }
 .cover-preview-shade.is-bottom { background: linear-gradient(to bottom, transparent 20%, rgb(51 42 38 / 10%) 42%, rgb(51 42 38 / 88%) 78%, var(--color-ink) 100%); }
-.cover-preview-copy { position: absolute; z-index: 2; right: 14.81%; left: 5.93%; display: grid; gap: 7px; }
+.cover-preview-copy { position: absolute; z-index: 2; right: 14.81%; left: 5.93%; display: grid; gap: 7px; text-align: center; }
 .cover-preview-copy.is-top { top: 14.58%; bottom: auto; }
 .cover-preview-copy.is-center { top: 39.58%; bottom: auto; }
 .cover-preview-copy.is-bottom { top: auto; bottom: 15.63%; }

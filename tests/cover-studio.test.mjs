@@ -54,6 +54,14 @@ test('renderizador preserva o contrato visual e exporta blob', async () => {
   }
 });
 
+test('centraliza contexto, headline e subtítulo na prévia e na exportação', async () => {
+  const css = await readFile(new URL('../apps/crm-next/app/globals.css', import.meta.url), 'utf8');
+  const renderer = await readFile(new URL('../apps/crm-next/lib/covers/render-cover.ts', import.meta.url), 'utf8');
+  assert.match(css, /\.cover-preview-copy\s*\{[^}]*text-align:\s*center/s);
+  assert.match(renderer, /context\.textAlign\s*=\s*['"]center['"]/);
+  assert.match(renderer, /headlineWidth/);
+});
+
 test('componente expõe o fluxo guiado e mantém a mídia local', async () => {
   const source = await readFile(new URL('../apps/crm-next/components/cover-studio.tsx', import.meta.url), 'utf8');
   for (const token of ['Adicionar vídeo ou foto', 'Escolher imagem', 'Definir conteúdo', 'Revisar e baixar', 'createObjectURL', 'revokeObjectURL', 'Baixar PNG', 'Baixar JPG', 'accept="video/*,image/*"']) {
