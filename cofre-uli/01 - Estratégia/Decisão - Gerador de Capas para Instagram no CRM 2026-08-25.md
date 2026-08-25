@@ -95,7 +95,7 @@ Uma usuária autenticada deve conseguir, sem conhecimento de design, selecionar 
 
 ### Validação local
 
-- `npm --prefix apps/crm-next test`: aprovado, 10 testes;
+- `npm --prefix apps/crm-next test`: aprovado, 11 testes;
 - `npm --prefix apps/crm-next run lint`: aprovado;
 - `npm --prefix apps/crm-next run build`: aprovado;
 - `git diff --check`: aprovado.
@@ -118,9 +118,13 @@ A Safe Zone operacional usa as margens `64 px` à esquerda, `160 px` à direita,
 
 O guia `GUIA SAFE ZONE · NÃO EXPORTADO` aparece na prévia principal da Etapa 02 e é removido do PNG/JPG. O renderizador aplica degradê superior, central ou inferior conforme a posição escolhida e mantém a largura máxima da copy dentro da área útil.
 
+### Alinhamento central da copy — 2026-08-25
+
+Por decisão determinística derivada do padrão aprovado para capas sociais, os três blocos da copy — contexto, headline e subtítulo — são centralizados horizontalmente dentro da Safe Zone. A regra vale simultaneamente para a prévia do Estúdio Editorial e para o arquivo PNG/JPG exportado; as três posições verticais, a hierarquia tipográfica, o degradê de proteção e a Safe Zone permanecem inalterados.
+
 ### Publicação verificada
 
-- commits publicados na branch `main`: `e5e5edf` (entrega do módulo), `e9a9149` (lint e navegação interna), `2074e7e` (sincronização do frame decodificado), `5652a57` (especificação de posições e Safe Zone), `7305277` (plano de implementação) e `234ada6` (posições, Safe Zone e renderização);
+- commits publicados na branch `main`: `e5e5edf` (entrega do módulo), `e9a9149` (lint e navegação interna), `2074e7e` (sincronização do frame decodificado), `5652a57` (especificação de posições e Safe Zone), `7305277` (plano de implementação), `234ada6` (posições, Safe Zone e renderização) e `e7d008a` (alinhamento central da copy);
 - `https://crm.ulizarzana.com/` redireciona para `/login` quando necessário;
 - `https://crm.ulizarzana.com/login` responde `200 OK`;
 - sessão autenticada verificou a Visão Geral com o acesso **Criar capa para Instagram**;
