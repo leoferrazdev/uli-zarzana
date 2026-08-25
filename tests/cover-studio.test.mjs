@@ -34,7 +34,7 @@ test('sinaliza copy vazia ou longa e aceita um preset curto', () => {
 
 test('renderizador preserva o contrato visual e exporta blob', async () => {
   const source = await readFile(new URL('../apps/crm-next/lib/covers/render-cover.ts', import.meta.url), 'utf8');
-  for (const token of ['1080', '1920', 'createLinearGradient', 'toBlob', 'document.fonts.load', 'context', 'headline', 'subtitle']) {
+  for (const token of ['COVER_DIMENSIONS', 'createLinearGradient', 'toBlob', 'document.fonts.load', 'context', 'headline', 'subtitle']) {
     assert.match(source, new RegExp(escapeRegExp(token)));
   }
 });
