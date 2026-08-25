@@ -108,10 +108,11 @@ O teste de contrato que protege essa regra foi adicionado em `tests/cover-studio
 
 ### Publicação verificada
 
-- commits publicados na branch `main`: `e5e5edf` (entrega do módulo) e `e9a9149` (lint e navegação interna);
+- commits publicados na branch `main`: `e5e5edf` (entrega do módulo), `e9a9149` (lint e navegação interna) e `2074e7e` (sincronização do frame decodificado);
 - `https://crm.ulizarzana.com/` redireciona para `/login` quando necessário;
 - `https://crm.ulizarzana.com/login` responde `200 OK`;
 - sessão autenticada verificou a Visão Geral com o acesso **Criar capa para Instagram**;
 - sessão autenticada verificou a rota `/capas`, o fluxo de quatro etapas e a mensagem de processamento local.
+- após a publicação de `2074e7e`, a rota autenticada `/capas` foi recarregada publicamente e permaneceu disponível com o módulo de capas.
 
 O deployment do CRM permanece no fluxo Node.js conectado ao GitHub; não foi necessário FTP para esta atualização. A resposta pública após o commit final permanece `200 OK` em `/login` e `307 → /login` em `/capas` sem sessão.
