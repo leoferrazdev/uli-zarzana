@@ -82,7 +82,7 @@ export default async function HomePage() {
     <main className="crm-page">
       <header className="crm-header">
         <div><span className="eyebrow">OPERAÇÃO COMERCIAL · HOJE</span><h1>Visão Geral</h1><p className="lede">Uma leitura clara do que está acontecendo na operação comercial da Uli.</p></div>
-        <div className="header-actions"><span className="user-badge">{profile.full_name} · {profile.role === 'administradora' ? 'Usuário administrador' : 'Usuário comercial'}</span><SignOutButton /></div>
+        <div className="header-actions"><a className="primary-action" href="/capas">Criar capa para Instagram</a><span className="user-badge">{profile.full_name} · {profile.role === 'administradora' ? 'Usuário administrador' : 'Usuário comercial'}</span><SignOutButton /></div>
       </header>
       <section className="metric-grid" aria-label="Indicadores de hoje">
         {metricLabels.map(([key, label, detail]) => <article className="metric-card" key={key}><small>{label}</small><strong>{metrics[key]}</strong><em>{detail}</em></article>)}
