@@ -97,3 +97,13 @@ Uma usuária autenticada deve conseguir, sem conhecimento de design, selecionar 
 - `git diff --check`: aprovado.
 
 O build exibiu apenas o aviso já existente de migração da convenção `middleware` para `proxy` no Next.js; não houve erro de compilação, tipagem ou geração das rotas.
+
+### Publicação verificada
+
+- commit publicado na branch `main`: `e5e5edf`;
+- `https://crm.ulizarzana.com/` redireciona para `/login` quando necessário;
+- `https://crm.ulizarzana.com/login` responde `200 OK`;
+- sessão autenticada verificou a Visão Geral com o acesso **Criar capa para Instagram**;
+- sessão autenticada verificou a rota `/capas`, o fluxo de quatro etapas e a mensagem de processamento local.
+
+O deployment do CRM permanece no fluxo Node.js conectado ao GitHub; não foi necessário FTP para esta atualização.
