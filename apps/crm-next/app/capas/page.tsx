@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { SignOutButton } from '../../components/sign-out-button';
 import CoverStudio from '../../components/cover-studio';
 import { createSupabaseServerClient } from '../../lib/supabase/server';
@@ -24,7 +25,7 @@ export default async function CoversPage() {
   return (
     <main className="crm-page cover-page">
       <header className="crm-header cover-header">
-        <div><a className="text-link cover-back-link" href="/">← Voltar para Visão Geral</a><span className="eyebrow">ECOSSISTEMA DIGITAL · CONTEÚDO</span><h1>Estúdio de capas</h1><p className="lede">Transforme a mídia que você acabou de gravar em uma capa editorial pronta para o Instagram.</p></div>
+        <div><Link className="text-link cover-back-link" href="/">← Voltar para Visão Geral</Link><span className="eyebrow">ECOSSISTEMA DIGITAL · CONTEÚDO</span><h1>Estúdio de capas</h1><p className="lede">Transforme a mídia que você acabou de gravar em uma capa editorial pronta para o Instagram.</p></div>
         <div className="header-actions"><span className="user-badge">{profile.full_name} · {profile.role === 'administradora' ? 'Usuário administrador' : 'Usuário comercial'}</span><SignOutButton /></div>
       </header>
       <CoverStudio />
