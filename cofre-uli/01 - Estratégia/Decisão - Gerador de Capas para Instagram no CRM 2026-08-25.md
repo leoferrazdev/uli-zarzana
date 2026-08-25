@@ -61,8 +61,39 @@ As regras completas permanecem em [[Regras de Uso do Sistema Visual - A1 B1 F1]]
 
 Não entram nesta primeira versão: histórico, armazenamento de mídia, publicação automática, integração com API do Instagram, editor avançado, múltiplos layouts, animação ou colaboração.
 
-O código será especificado e implementado no repositório do CRM em `apps/crm-next`. A especificação formal correspondente está em `docs/superpowers/specs/2026-08-25-instagram-cover-studio-design.md`. A implementação permanece pendente da revisão dessa especificação formal.
+O código foi especificado e implementado no repositório do CRM em `apps/crm-next`. A especificação formal correspondente está em `docs/superpowers/specs/2026-08-25-instagram-cover-studio-design.md` e o plano executado está em `docs/superpowers/plans/2026-08-25-instagram-cover-studio.md`.
 
 ## Critério de sucesso
 
 Uma usuária autenticada deve conseguir, sem conhecimento de design, selecionar uma foto ou vídeo, aceitar o frame recomendado, preencher ou ajustar os três textos, revisar a arte e baixar uma capa legível e coerente com o sistema visual aprovado, sem que a mídia saia do navegador.
+
+## Implementação e validação — 2026-08-25
+
+### Entregas
+
+- rota autenticada `/capas` conectada à Visão Geral;
+- seleção única de vídeo ou foto;
+- extração local de três frames em 25%, 50% e 75%, com recomendação automática do frame central;
+- quatro modelos editoriais editáveis;
+- prévia responsiva 9:16;
+- renderização Canvas com degradê de proteção e tipografia aprovada;
+- download local em PNG e JPG, ambos em 1080 × 1920 px;
+- nenhuma chamada de mídia ao Supabase, ao CRM ou a armazenamento externo.
+
+### Arquivos principais
+
+- `apps/crm-next/app/capas/page.tsx`
+- `apps/crm-next/components/cover-studio.tsx`
+- `apps/crm-next/lib/covers/cover-presets.ts`
+- `apps/crm-next/lib/covers/render-cover.ts`
+- `apps/crm-next/app/globals.css`
+- `tests/cover-studio.test.mjs`
+
+### Validação local
+
+- `npm --prefix apps/crm-next test`: aprovado, 7 testes;
+- `npm --prefix apps/crm-next run lint`: aprovado;
+- `npm --prefix apps/crm-next run build`: aprovado;
+- `git diff --check`: aprovado.
+
+O build exibiu apenas o aviso já existente de migração da convenção `middleware` para `proxy` no Next.js; não houve erro de compilação, tipagem ou geração das rotas.
