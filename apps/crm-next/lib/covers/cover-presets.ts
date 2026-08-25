@@ -3,6 +3,29 @@ export const COVER_DIMENSIONS = {
   height: 1920,
 } as const;
 
+export type CopyPosition = 'top' | 'center' | 'bottom';
+
+export const COPY_POSITIONS = [
+  { id: 'top', label: 'Topo', description: 'Mensagem no início da área segura.' },
+  { id: 'center', label: 'Centro', description: 'Mensagem no centro da área segura.' },
+  { id: 'bottom', label: 'Base', description: 'Posição editorial padrão da Uli.' },
+] as const satisfies readonly { id: CopyPosition; label: string; description: string }[];
+
+export const META_SAFE_ZONE = {
+  top: 220,
+  right: 160,
+  bottom: 300,
+  left: 64,
+  width: COVER_DIMENSIONS.width - 64 - 160,
+  height: COVER_DIMENSIONS.height - 220 - 300,
+} as const;
+
+export const COPY_POSITION_ANCHORS: Record<CopyPosition, { contextY: number; headlineY: number }> = {
+  top: { contextY: 280, headlineY: 370 },
+  center: { contextY: 760, headlineY: 850 },
+  bottom: { contextY: 1160, headlineY: 1250 },
+};
+
 export type CoverPresetId = 'carreira' | 'lideranca' | 'autoridade' | 'ascensao';
 
 export type CoverPreset = {

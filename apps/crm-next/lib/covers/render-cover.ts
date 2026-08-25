@@ -1,4 +1,10 @@
-import { COVER_DIMENSIONS, type CoverCopy } from './cover-presets';
+import {
+  COPY_POSITION_ANCHORS,
+  COVER_DIMENSIONS,
+  META_SAFE_ZONE,
+  type CopyPosition,
+  type CoverCopy,
+} from './cover-presets';
 
 const COLORS = {
   ink: '#332A26',
@@ -12,7 +18,7 @@ type TextLayout = {
   lineHeight: number;
 };
 
-const MAX_TEXT_WIDTH = 936;
+const MAX_TEXT_WIDTH = META_SAFE_ZONE.width;
 
 export function loadCoverImage(imageUrl: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -89,7 +95,7 @@ function drawLines(
   return y + layout.lines.length * layout.lineHeight;
 }
 
-function drawBackground(context: CanvasRenderingContext2D, image: HTMLImageElement) {
+function drawBackground(context: CanvasRenderingContext2D, image: HTMLImageElement, position: CopyPosition) {
   const { width, height } = COVER_DIMENSIONS;
   const naturalWidth = image.naturalWidth || image.width;
   const naturalHeight = image.naturalHeight || image.height;
@@ -101,11 +107,31 @@ function drawBackground(context: CanvasRenderingContext2D, image: HTMLImageEleme
 
   context.drawImage(image, offsetX, offsetY, drawnWidth, drawnHeight);
 
-  const readingGradient = context.createLinearGradient(0, 540, 0, height);
-  readingGradient.addColorStop(0, 'rgba(51,42,38,0)');
-  readingGradient.addColorStop(0.34, 'rgba(51,42,38,0.18)');
-  readingGradient.addColorStop(0.72, 'rgba(51,42,38,0.88)');
-  readingGradient.addColorStop(1, COLORS.ink);
+  const readingGradient = position === 'top'
+    ? context.createLinearGradient(0, 0, 0, 900)
+    : position === 'center'
+      ? context.createRadialGradient(width / 2, height / 2, 120, width / 2, height / 2, 780)
+      : position === 'bottom'
+        ? context.createLinearGradient(0, 540, 0, height)
+        : context.createLinearGradient(0, 540, 0, height);
+
+  if (position === 'top') {
+    readingGradient.addColorStop(0, 'rgba(51,42,38,0.86)');
+    readingGradient.addColorStop(0.38, 'rgba(51,42,38,0.64)');
+    readingGradient.addColorStop(0.78, 'rgba(51,42,38,0.12)');
+    readingGradient.addColorStop(1, 'rgba(51,42,38,0)');
+  } else if (position === 'center') {
+    readingGradient.addColorStop(0, 'rgba(51,42,38,0.08)');
+    readingGradient.addColorStop(0.38, 'rgba(51,42,38,0.52)');
+    readingGradient.addColorStop(0.58, 'rgba(51,42,38,0.72)');
+    readingGradient.addColorStop(0.82, 'rgba(51,42,38,0.18)');
+    readingGradient.addColorStop(1, 'rgba(51,42,38,0)');
+  } else {
+    readingGradient.addColorStop(0, 'rgba(51,42,38,0)');
+    readingGradient.addColorStop(0.34, 'rgba(51,42,38,0.18)');
+    readingGradient.addColorStop(0.72, 'rgba(51,42,38,0.88)');
+    readingGradient.addColorStop(1, COLORS.ink);
+  }
   context.fillStyle = readingGradient;
   context.fillRect(0, 0, width, height);
 }
@@ -114,6 +140,7 @@ export async function renderCover(options: {
   imageUrl: string;
   copy: CoverCopy;
   format: 'png' | 'jpeg';
+  position: CopyPosition;
 }): Promise<Blob> {
   await loadApprovedFonts();
   const image = await loadCoverImage(options.imageUrl);
@@ -123,9 +150,10 @@ export async function renderCover(options: {
   const context = canvas.getContext('2d');
   if (!context) throw new Error('O navegador não disponibilizou o Canvas para exportação.');
 
-  drawBackground(context, image);
+  drawBackground(context, image, options.position);
 
-  const x = 72;
+  const x = META_SAFE_ZONE.left;
+  const { contextY, headlineY } = COPY_POSITION_ANCHORS[options.position];
   const contextLayout = fitText(context, options.copy.context, {
     family: '"Source Sans 3", sans-serif',
     weight: 600,
@@ -151,8 +179,8 @@ export async function renderCover(options: {
     maxLines: 1,
   });
 
-  drawLines(context, contextLayout, options.copy.context, x, 1320, COLORS.champagne, '"Source Sans 3", sans-serif', 600);
-  const headlineEnd = drawLines(context, headlineLayout, options.copy.headline, x, 1410, COLORS.paper, '"Libre Baskerville", Georgia, serif', 700);
+  drawLines(context, contextLayout, options.copy.context, x, contextY, COLORS.champagne, '"Source Sans 3", sans-serif', 600);
+  const headlineEnd = drawLines(context, headlineLayout, options.copy.headline, x, headlineY, COLORS.paper, '"Libre Baskerville", Georgia, serif', 700);
   context.fillStyle = COLORS.champagne;
   context.beginPath();
   context.arc(x + Math.min(MAX_TEXT_WIDTH, context.measureText(headlineLayout.lines[headlineLayout.lines.length - 1] ?? '').width) + 22, headlineEnd - headlineLayout.lineHeight / 2, 8, 0, Math.PI * 2);

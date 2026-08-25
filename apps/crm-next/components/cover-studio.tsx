@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import {
+  COPY_POSITIONS,
   COVER_DIMENSIONS,
   COVER_PRESETS,
   COVER_TEXT_LIMITS,
@@ -9,6 +10,7 @@ import {
   validateCoverCopy,
   type CoverCopy,
   type CoverCopyField,
+  type CopyPosition,
   type CoverPresetId,
 } from '../lib/covers/cover-presets';
 import { renderCover } from '../lib/covers/render-cover';
@@ -156,6 +158,7 @@ export default function CoverStudio() {
   const [frames, setFrames] = useState<FrameCandidate[]>([]);
   const [selectedFrameId, setSelectedFrameId] = useState('');
   const [presetId, setPresetId] = useState<CoverPresetId>('carreira');
+  const [copyPosition, setCopyPosition] = useState<CopyPosition>('bottom');
   const [copy, setCopy] = useState<CoverCopy>(INITIAL_COPY);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -228,6 +231,7 @@ export default function CoverStudio() {
     setImageUrl('');
     setFrames([]);
     setSelectedFrameId('');
+    setCopyPosition('bottom');
     setError('');
     setNotice('');
     if (inputRef.current) inputRef.current.value = '';
@@ -242,6 +246,11 @@ export default function CoverStudio() {
   const selectPreset = (id: CoverPresetId) => {
     setPresetId(id);
     setCopy(copyFromPreset(id));
+    setError('');
+  };
+
+  const selectCopyPosition = (position: CopyPosition) => {
+    setCopyPosition(position);
     setError('');
   };
 
@@ -275,7 +284,7 @@ export default function CoverStudio() {
     setError('');
     setNotice('');
     try {
-      const blob = await renderCover({ imageUrl, copy, format });
+      const blob = await renderCover({ imageUrl, copy, format, position: copyPosition });
       const downloadUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       const extension = format === 'png' ? 'png' : 'jpg';
@@ -329,10 +338,23 @@ export default function CoverStudio() {
           <div className="cover-panel-stack">
             <div className="cover-panel-heading"><span className="eyebrow">ETAPA 02</span><h3>Escolha a imagem da capa</h3><p>{mediaKind === 'video' ? 'O frame central foi selecionado automaticamente. Troque apenas se outro momento funcionar melhor.' : 'A foto será enquadrada automaticamente no formato vertical 9:16.'}</p></div>
             <div className="cover-image-choice">
-              <CoverPreview imageUrl={imageUrl} copy={copy} />
+              <CoverPreview imageUrl={imageUrl} copy={copy} position={copyPosition} showSafeZone />
               <div className="cover-choice-controls">
                 <div className="cover-file-summary"><strong>{fileName}</strong><span>{mediaKind === 'video' ? 'Vídeo · 3 frames locais' : 'Imagem · recorte automático 9:16'}</span></div>
                 {frames.length > 0 && <div className="cover-frame-grid" aria-label="Frames candidatos">{frames.map((frame) => <button className={frame.id === selectedFrameId ? 'is-selected' : ''} type="button" key={frame.id} onClick={() => selectFrame(frame)} aria-pressed={frame.id === selectedFrameId}><img src={frame.dataUrl} alt={`Frame em ${formatTime(frame.time)}`} /><span>{formatTime(frame.time)}</span></button>)}</div>}
+                <fieldset className="cover-position-picker" aria-label="Posição da copy">
+                  <legend>Posição da copy</legend>
+                  <p className="cover-position-help">Escolha onde a mensagem deve aparecer dentro da área segura da capa.</p>
+                  <div className="cover-position-grid">
+                    {COPY_POSITIONS.map((position) => (
+                      <button className={`cover-position-card${position.id === copyPosition ? ' is-selected' : ''}`} type="button" key={position.id} onClick={() => selectCopyPosition(position.id)} aria-pressed={position.id === copyPosition}>
+                        <CoverPreview imageUrl={imageUrl} copy={copy} position={position.id} compact />
+                        <strong>{position.label}</strong>
+                        <small>{position.description}</small>
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
                 <div className="cover-actions"><button className="button-secondary" type="button" onClick={replaceMedia}>Trocar mídia</button><button className="button-primary" type="button" onClick={goToCopy}>Continuar para o conteúdo</button></div>
               </div>
             </div>
@@ -350,7 +372,7 @@ export default function CoverStudio() {
                 <TextField field="subtitle" label="Subtítulo" value={copy.subtitle} limit={COVER_TEXT_LIMITS.subtitle} error={errorFor('subtitle')} onChange={updateCopy} />
                 <div className="cover-actions"><button className="button-secondary" type="button" onClick={() => setStage('image')}>Voltar para imagem</button><button className="button-primary" type="button" onClick={goToReview}>Revisar capa</button></div>
               </div>
-              <CoverPreview imageUrl={imageUrl} copy={copy} />
+              <CoverPreview imageUrl={imageUrl} copy={copy} position={copyPosition} />
             </div>
           </div>
         )}
@@ -358,7 +380,7 @@ export default function CoverStudio() {
         {stage === 'review' && (
           <div className="cover-panel-stack">
             <div className="cover-panel-heading"><span className="eyebrow">ETAPA 04</span><h3>Revise e baixe a capa</h3><p>O arquivo final será exportado em 1080 × 1920 px, pronto para Reels, Stories e conteúdo social.</p></div>
-            <div className="cover-review-layout"><CoverPreview imageUrl={imageUrl} copy={copy} /><div className="cover-review-copy"><div className="cover-file-summary"><span>MODELO EDITORIAL</span><strong>{COVER_PRESETS.find((preset) => preset.id === presetId)?.label}</strong><small>{fileName} · proporção 9:16</small></div><div className="cover-actions cover-downloads"><button className="button-primary" type="button" disabled={busy} onClick={() => void download('png')}>Baixar PNG</button><button className="button-secondary" type="button" disabled={busy} onClick={() => void download('jpeg')}>Baixar JPG</button></div><button className="text-link cover-edit-link" type="button" onClick={() => setStage('copy')}>Voltar e editar conteúdo</button><button className="text-link cover-edit-link" type="button" onClick={() => setStage('image')}>Voltar e escolher outra imagem</button></div></div>
+            <div className="cover-review-layout"><CoverPreview imageUrl={imageUrl} copy={copy} position={copyPosition} /><div className="cover-review-copy"><div className="cover-file-summary"><span>MODELO EDITORIAL</span><strong>{COVER_PRESETS.find((preset) => preset.id === presetId)?.label}</strong><small>{fileName} · proporção 9:16 · posição {COPY_POSITIONS.find((position) => position.id === copyPosition)?.label}</small></div><div className="cover-actions cover-downloads"><button className="button-primary" type="button" disabled={busy} onClick={() => void download('png')}>Baixar PNG</button><button className="button-secondary" type="button" disabled={busy} onClick={() => void download('jpeg')}>Baixar JPG</button></div><button className="text-link cover-edit-link" type="button" onClick={() => setStage('copy')}>Voltar e editar conteúdo</button><button className="text-link cover-edit-link" type="button" onClick={() => setStage('image')}>Voltar e escolher outra imagem</button></div></div>
           </div>
         )}
 
@@ -374,6 +396,6 @@ function TextField({ field, label, value, limit, error, onChange }: { field: Cov
   return <div className="cover-field"><label htmlFor={inputId}>{label}</label><input id={inputId} value={value} maxLength={limit} onChange={(event) => onChange(field, event.target.value)} aria-describedby={`${inputId}-hint`} aria-invalid={Boolean(error)} /><div className="cover-field-meta" id={`${inputId}-hint`}><span>{error ?? `Até ${limit} caracteres para preservar a leitura.`}</span><small>{value.length}/{limit}</small></div></div>;
 }
 
-function CoverPreview({ imageUrl, copy }: { imageUrl: string; copy: CoverCopy }) {
-  return <figure className="cover-preview"><div className="cover-preview-media">{imageUrl ? <img src={imageUrl} alt="Prévia da imagem selecionada para a capa" /> : <span>Prévia 9:16</span>}<div className="cover-preview-shade" /><div className="cover-preview-copy"><span>{copy.context}</span><strong>{copy.headline}</strong><em>{copy.subtitle}</em></div></div><figcaption>{COVER_DIMENSIONS.width} × {COVER_DIMENSIONS.height} px · 9:16</figcaption></figure>;
+function CoverPreview({ imageUrl, copy, position = 'bottom', showSafeZone = false, compact = false }: { imageUrl: string; copy: CoverCopy; position?: CopyPosition; showSafeZone?: boolean; compact?: boolean }) {
+  return <figure className={`cover-preview${compact ? ' is-compact' : ''}`}><div className="cover-preview-media">{imageUrl ? <img src={imageUrl} alt="Prévia da imagem selecionada para a capa" /> : <span>Prévia 9:16</span>}<div className={`cover-preview-shade is-${position}`} /><div className={`cover-preview-copy is-${position}`}><span>{copy.context}</span><strong>{copy.headline}</strong><em>{copy.subtitle}</em></div>{showSafeZone && <div className="cover-safe-zone-guide"><span className="cover-safe-zone-label">GUIA SAFE ZONE · NÃO EXPORTADO</span></div>}</div><figcaption>{COVER_DIMENSIONS.width} × {COVER_DIMENSIONS.height} px · 9:16</figcaption></figure>;
 }

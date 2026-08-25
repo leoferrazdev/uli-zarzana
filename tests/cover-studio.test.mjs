@@ -21,6 +21,18 @@ test('mantém o canvas social aprovado e os quatro modelos editoriais', () => {
   }
 });
 
+test('define três posições de copy dentro da Safe Zone operacional', async () => {
+  const source = await readFile(new URL('../apps/crm-next/lib/covers/cover-presets.ts', import.meta.url), 'utf8');
+  assert.match(source, /COPY_POSITIONS/);
+  assert.match(source, /top/);
+  assert.match(source, /center/);
+  assert.match(source, /bottom/);
+  assert.match(source, /META_SAFE_ZONE/);
+  assert.match(source, /top:\s*220/);
+  assert.match(source, /right:\s*160/);
+  assert.match(source, /bottom:\s*300/);
+});
+
 test('calcula frames em 25%, 50% e 75% sem sair da duração', () => {
   assert.deepEqual(getCandidateFrameTimes(20), [5, 10, 15]);
   assert.deepEqual(getCandidateFrameTimes(0), []);
@@ -35,6 +47,9 @@ test('sinaliza copy vazia ou longa e aceita um preset curto', () => {
 test('renderizador preserva o contrato visual e exporta blob', async () => {
   const source = await readFile(new URL('../apps/crm-next/lib/covers/render-cover.ts', import.meta.url), 'utf8');
   for (const token of ['COVER_DIMENSIONS', 'createLinearGradient', 'toBlob', 'document.fonts.load', 'context', 'headline', 'subtitle']) {
+    assert.match(source, new RegExp(escapeRegExp(token)));
+  }
+  for (const token of ['COPY_POSITION_ANCHORS', 'META_SAFE_ZONE', 'top', 'center', 'bottom']) {
     assert.match(source, new RegExp(escapeRegExp(token)));
   }
 });
@@ -52,6 +67,16 @@ test('captura aguarda um frame de vídeo efetivamente decodificado', async () =>
   assert.match(source, /readyState/);
 });
 
+test('propaga posição e mantém a guia Safe Zone fora da exportação', async () => {
+  const component = await readFile(new URL('../apps/crm-next/components/cover-studio.tsx', import.meta.url), 'utf8');
+  const renderer = await readFile(new URL('../apps/crm-next/lib/covers/render-cover.ts', import.meta.url), 'utf8');
+  assert.match(component, /copyPosition/);
+  assert.match(component, /COPY_POSITIONS/);
+  assert.match(component, /GUIA SAFE ZONE · NÃO EXPORTADO/);
+  assert.match(renderer, /position/);
+  assert.doesNotMatch(renderer, /GUIA SAFE ZONE/);
+});
+
 test('rota e dashboard apontam para o estúdio de capas', async () => {
   const route = await readFile(new URL('../apps/crm-next/app/capas/page.tsx', import.meta.url), 'utf8');
   const home = await readFile(new URL('../apps/crm-next/app/page.tsx', import.meta.url), 'utf8');
@@ -64,6 +89,9 @@ test('rota e dashboard apontam para o estúdio de capas', async () => {
 test('CSS do estúdio reutiliza tokens da marca e possui layout mobile', async () => {
   const css = await readFile(new URL('../apps/crm-next/app/globals.css', import.meta.url), 'utf8');
   for (const token of ['.cover-studio', '--color-ink', '--color-paper', '--color-champagne', '--font-serif', '@media (max-width: 640px)', '.cover-preview']) {
+    assert.match(css, new RegExp(escapeRegExp(token)));
+  }
+  for (const token of ['.cover-position-picker', '.cover-position-grid', '.cover-position-card', '.cover-safe-zone-guide', '.cover-safe-zone-label']) {
     assert.match(css, new RegExp(escapeRegExp(token)));
   }
 });

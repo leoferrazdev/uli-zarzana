@@ -75,6 +75,8 @@ Uma usuária autenticada deve conseguir, sem conhecimento de design, selecionar 
 - seleção única de vídeo ou foto;
 - extração local de três frames em 25%, 50% e 75%, com recomendação automática do frame central;
 - quatro modelos editoriais editáveis;
+- três posições de copy: Topo, Centro e Base, com Base como padrão;
+- Safe Zone operacional aplicada na prévia e no renderizador, com guia visível somente na interface;
 - prévia responsiva 9:16;
 - renderização Canvas com degradê de proteção e tipografia aprovada;
 - download local em PNG e JPG, ambos em 1080 × 1920 px;
@@ -88,10 +90,12 @@ Uma usuária autenticada deve conseguir, sem conhecimento de design, selecionar 
 - `apps/crm-next/lib/covers/render-cover.ts`
 - `apps/crm-next/app/globals.css`
 - `tests/cover-studio.test.mjs`
+- `docs/superpowers/specs/2026-08-25-cover-copy-position-safe-zone-design.md`
+- `docs/superpowers/plans/2026-08-25-cover-copy-position-safe-zone.md`
 
 ### Validação local
 
-- `npm --prefix apps/crm-next test`: aprovado, 8 testes;
+- `npm --prefix apps/crm-next test`: aprovado, 10 testes;
 - `npm --prefix apps/crm-next run lint`: aprovado;
 - `npm --prefix apps/crm-next run build`: aprovado;
 - `git diff --check`: aprovado.
@@ -106,9 +110,17 @@ A captura agora aguarda `requestVideoFrameCallback`, utiliza dois ciclos de rend
 
 O teste de contrato que protege essa regra foi adicionado em `tests/cover-studio.test.mjs`.
 
+### Posições da copy e Safe Zone — 2026-08-25
+
+O Estúdio Editorial passou a oferecer exatamente três posições verticais — Topo, Centro e Base — em cartões de prévia na Etapa 02. A posição Base permanece selecionada inicialmente e a escolha acompanha a prévia, a revisão e a exportação.
+
+A Safe Zone operacional usa as margens `64 px` à esquerda, `160 px` à direita, `220 px` no topo e `300 px` na base, resultando na área útil `x: 64–920` e `y: 220–1620` no canvas de `1080 × 1920 px`. A regra é uma margem conservadora interna para reduzir colisões com a interface nativa da Meta; não é tratada como medida universal fixa da plataforma.
+
+O guia `GUIA SAFE ZONE · NÃO EXPORTADO` aparece na prévia principal da Etapa 02 e é removido do PNG/JPG. O renderizador aplica degradê superior, central ou inferior conforme a posição escolhida e mantém a largura máxima da copy dentro da área útil.
+
 ### Publicação verificada
 
-- commits publicados na branch `main`: `e5e5edf` (entrega do módulo), `e9a9149` (lint e navegação interna) e `2074e7e` (sincronização do frame decodificado);
+- commits publicados na branch `main`: `e5e5edf` (entrega do módulo), `e9a9149` (lint e navegação interna), `2074e7e` (sincronização do frame decodificado), `5652a57` (especificação de posições e Safe Zone) e `7305277` (plano de implementação);
 - `https://crm.ulizarzana.com/` redireciona para `/login` quando necessário;
 - `https://crm.ulizarzana.com/login` responde `200 OK`;
 - sessão autenticada verificou a Visão Geral com o acesso **Criar capa para Instagram**;
