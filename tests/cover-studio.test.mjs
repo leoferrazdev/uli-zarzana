@@ -73,6 +73,27 @@ test('captura aguarda um frame de vídeo efetivamente decodificado', async () =>
   const source = await readFile(new URL('../apps/crm-next/components/cover-studio.tsx', import.meta.url), 'utf8');
   assert.match(source, /requestVideoFrameCallback/);
   assert.match(source, /readyState/);
+  assert.match(source, /AbortController/);
+  assert.match(source, /toBlob/);
+  assert.match(source, /loadeddata/);
+  assert.match(source, /canplay/);
+});
+
+test('separa semanticamente navegação, identificação e título do cabeçalho', async () => {
+  const route = await readFile(new URL('../apps/crm-next/app/capas/page.tsx', import.meta.url), 'utf8');
+  const css = await readFile(new URL('../apps/crm-next/app/globals.css', import.meta.url), 'utf8');
+  assert.match(route, /cover-header-copy/);
+  assert.match(route, /cover-navigation/);
+  assert.match(css, /\.cover-header-copy/);
+  assert.match(css, /\.cover-title-block/);
+});
+
+test('expõe estados honestos de processamento local e cancelamento', async () => {
+  const source = await readFile(new URL('../apps/crm-next/components/cover-studio.tsx', import.meta.url), 'utf8');
+  assert.match(source, /Cancelar/);
+  assert.match(source, /Tentar novamente/);
+  assert.match(source, /Frame central pronto|Mídia pronta para continuar/);
+  assert.match(source, /role="status"/);
 });
 
 test('propaga posição e mantém a guia Safe Zone fora da exportação', async () => {

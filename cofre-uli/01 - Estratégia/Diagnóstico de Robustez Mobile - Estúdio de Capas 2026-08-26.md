@@ -8,7 +8,7 @@ tags:
   - ux-ui
   - mobile
   - conteúdo-social
-status: diagnóstico-aguardando-validação
+status: implementado-localmente
 aliases:
   - Diagnóstico Mobile do Estúdio de Capas
 ---
@@ -75,6 +75,30 @@ Manter o processamento local, sem enviar a mídia ao servidor. Essa decisão pre
 ### Backend e fase posterior
 
 Nenhuma alteração de backend é necessária para esta correção porque o MVP não recebe mídia. Se a compatibilidade com HEVC/MOV se tornar requisito obrigatório, a alternativa robusta será uma segunda fase com upload controlado, armazenamento temporário e normalização por FFmpeg no servidor. Essa alternativa muda a decisão de privacidade e precisa ser especificada separadamente.
+
+## Implementação aprovada e realizada
+
+O diagnóstico foi aprovado em `2026-08-26` e aplicado no CRM. A implementação preserva o limite do MVP — mídia somente no navegador — e corrige os pontos observados:
+
+- o cabeçalho foi separado semanticamente em navegação, identificação da seção, título e descrição, com espaçamento explícito e comportamento seguro em telas estreitas;
+- o vídeo agora é processado com `AbortController`, progresso local e cancelamento, sem apresentar um falso estado de upload;
+- o frame central é preparado primeiro e a Etapa 02 pode ser exibida assim que ele estiver pronto; os frames alternativos continuam em segundo plano;
+- a preparação aguarda `loadedmetadata`, `loadeddata`/`canplay`, `seeked` e frame decodificado, com fallback para `currentTime = 0`;
+- os thumbnails usam `canvas.toBlob()` e URLs temporárias, que são revogadas na troca, cancelamento, erro e desmontagem;
+- o sistema valida tipo, limite de vídeo de `200 MB`, duração máxima de `15 minutos`, dimensões decodificadas e codec não suportado, com orientação para MP4/H.264 ou foto;
+- a interface oferece `Cancelar`, `Tentar novamente`, progresso local e mensagens de `Mídia pronta para continuar`.
+
+### Evidência local
+
+- `npm.cmd --prefix apps/crm-next test`: `17` testes aprovados, `0` falhas;
+- `tsc --noEmit`: código `0`;
+- lint focado nos arquivos alterados: código `0`, sem avisos;
+- `npm.cmd run build`: código `0`, com a rota dinâmica `/capas` compilada;
+- a validação visual pública ainda depende da conclusão do deployment automático após o push na `main`.
+
+## Limite de validação
+
+O teste de codec MOV/HEVC e o teste em dispositivo físico iOS ainda não foram realizados. O comportamento desses formatos permanece condicionado ao suporte do navegador; a normalização por FFmpeg segue como fase posterior, caso se torne requisito obrigatório.
 
 ## Riscos e limites
 

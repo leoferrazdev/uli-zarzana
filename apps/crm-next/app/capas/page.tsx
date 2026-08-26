@@ -25,7 +25,10 @@ export default async function CoversPage() {
   return (
     <main className="crm-page cover-page">
       <header className="crm-header cover-header">
-        <div><Link className="text-link cover-back-link" href="/">← Voltar para Visão Geral</Link><span className="eyebrow">ECOSSISTEMA DIGITAL · CONTEÚDO</span><h1>Estúdio de capas</h1><p className="lede">Transforme a mídia que você acabou de gravar em uma capa editorial pronta para o Instagram.</p></div>
+        <div className="cover-header-copy">
+          <nav className="cover-navigation" aria-label="Navegação da página"><Link className="text-link cover-back-link" href="/">← Voltar para Visão Geral</Link></nav>
+          <div className="cover-title-block"><span className="eyebrow">ECOSSISTEMA DIGITAL · CONTEÚDO</span><h1>Estúdio de capas</h1><p className="lede">Transforme a mídia que você acabou de gravar em uma capa editorial pronta para o Instagram.</p></div>
+        </div>
         <div className="header-actions"><span className="user-badge">{profile.full_name} · {profile.role === 'administradora' ? 'Usuário administrador' : 'Usuário comercial'}</span><SignOutButton /></div>
       </header>
       <CoverStudio />

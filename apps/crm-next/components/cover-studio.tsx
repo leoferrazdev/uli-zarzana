@@ -1,5 +1,8 @@
 'use client';
 
+/* Blob URLs are created in the browser and cannot be optimized by next/image. */
+/* eslint-disable @next/next/no-img-element */
+
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import {
   COPY_POSITIONS,
@@ -14,10 +17,12 @@ import {
   type CoverPresetId,
 } from '../lib/covers/cover-presets';
 import { renderCover } from '../lib/covers/render-cover';
+import { validateMediaFile, validateVideoDuration } from '../lib/covers/media-validation';
 
 type StageId = 'media' | 'image' | 'copy' | 'review';
 type MediaKind = 'image' | 'video';
-type FrameCandidate = { id: string; time: number; dataUrl: string };
+type FrameCandidate = { id: string; time: number; imageUrl: string };
+type ProcessingProgress = { completed: number; total: number; label: string };
 
 const STAGES: { id: StageId; label: string; title: string }[] = [
   { id: 'media', label: '01', title: 'Adicionar mídia' },
@@ -37,111 +42,252 @@ function copyFromPreset(id: CoverPresetId): CoverCopy {
   return { context: preset.context, headline: preset.headline, subtitle: preset.subtitle };
 }
 
-function waitForMetadata(video: HTMLVideoElement): Promise<void> {
-  if (video.readyState >= 1 && Number.isFinite(video.duration)) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const handleLoaded = () => {
-      cleanup();
-      resolve();
-    };
-    const handleError = () => {
-      cleanup();
-      reject(new Error('O navegador não conseguiu ler a duração do vídeo.'));
-    };
-    const cleanup = () => {
-      video.removeEventListener('loadedmetadata', handleLoaded);
-      video.removeEventListener('error', handleError);
-    };
-    video.addEventListener('loadedmetadata', handleLoaded, { once: true });
-    video.addEventListener('error', handleError, { once: true });
-  });
+function createAbortError() {
+  const error = new Error('Processamento cancelado.');
+  error.name = 'AbortError';
+  return error;
 }
 
-function seekVideo(video: HTMLVideoElement, time: number): Promise<void> {
+function throwIfAborted(signal?: AbortSignal) {
+  if (signal?.aborted) throw createAbortError();
+}
+
+function getVideoErrorMessage(video: HTMLVideoElement, fallback: string) {
+  if (video.error?.code === 4) {
+    return 'Formato de vídeo não suportado neste navegador. Tente MP4 (H.264) ou envie uma foto.';
+  }
+  return fallback;
+}
+
+function waitForMetadata(video: HTMLVideoElement, signal: AbortSignal): Promise<void> {
+  if (video.readyState >= 1 && Number.isFinite(video.duration)) return Promise.resolve();
+
   return new Promise((resolve, reject) => {
     let settled = false;
+    const timeout = window.setTimeout(() => finish(() => reject(new Error('O navegador demorou para ler os dados do vídeo.'))), 8000);
+    const cleanup = () => {
+      window.clearTimeout(timeout);
+      video.removeEventListener('loadedmetadata', handleLoaded);
+      video.removeEventListener('error', handleError);
+      signal.removeEventListener('abort', handleAbort);
+    };
     const finish = (callback: () => void) => {
       if (settled) return;
       settled = true;
-      window.clearTimeout(timeout);
-      video.removeEventListener('seeked', handleSeeked);
-      video.removeEventListener('error', handleError);
+      cleanup();
       callback();
     };
-    const handleSeeked = () => finish(resolve);
-    const handleError = () => finish(() => reject(new Error('Não foi possível capturar um frame deste vídeo.')));
-    const timeout = window.setTimeout(() => finish(() => reject(new Error('A captura do frame demorou mais que o esperado.'))), 6000);
-    video.addEventListener('seeked', handleSeeked, { once: true });
+    const handleLoaded = () => finish(resolve);
+    const handleError = () => finish(() => reject(new Error(getVideoErrorMessage(video, 'O navegador não conseguiu ler a duração do vídeo.'))));
+    const handleAbort = () => finish(() => reject(createAbortError()));
+
+    video.addEventListener('loadedmetadata', handleLoaded, { once: true });
     video.addEventListener('error', handleError, { once: true });
-    video.currentTime = time;
-    if (Math.abs(video.currentTime - time) < 0.001) window.requestAnimationFrame(handleSeeked);
+    signal.addEventListener('abort', handleAbort, { once: true });
+    throwIfAborted(signal);
   });
 }
 
-async function waitForDecodedVideoFrame(video: HTMLVideoElement): Promise<void> {
+function seekVideo(video: HTMLVideoElement, time: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const timeout = window.setTimeout(() => finish(() => reject(new Error('A captura do frame demorou mais que o esperado.'))), 5000);
+    const cleanup = () => {
+      window.clearTimeout(timeout);
+      video.removeEventListener('seeked', handleSeeked);
+      video.removeEventListener('error', handleError);
+      signal.removeEventListener('abort', handleAbort);
+    };
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      callback();
+    };
+    const handleSeeked = () => finish(resolve);
+    const handleError = () => finish(() => reject(new Error(getVideoErrorMessage(video, 'Não foi possível capturar um frame deste vídeo.'))));
+    const handleAbort = () => finish(() => reject(createAbortError()));
+
+    video.addEventListener('seeked', handleSeeked, { once: true });
+    video.addEventListener('error', handleError, { once: true });
+    signal.addEventListener('abort', handleAbort, { once: true });
+    try {
+      throwIfAborted(signal);
+      video.currentTime = time;
+      if (Math.abs(video.currentTime - time) < 0.001) window.requestAnimationFrame(handleSeeked);
+    } catch (error) {
+      finish(() => reject(error instanceof Error ? error : new Error('Não foi possível posicionar o vídeo.')));
+    }
+  });
+}
+
+async function waitForDecodedVideoFrame(video: HTMLVideoElement, signal: AbortSignal): Promise<void> {
   const videoWithFrameCallback = video as HTMLVideoElement & {
     requestVideoFrameCallback?: (callback: () => void) => number;
   };
 
+  if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const timeout = window.setTimeout(() => finish(() => reject(new Error('O navegador não conseguiu preparar o frame do vídeo.'))), 5000);
+      const cleanup = () => {
+        window.clearTimeout(timeout);
+        video.removeEventListener('loadeddata', handleReady);
+        video.removeEventListener('canplay', handleReady);
+        video.removeEventListener('error', handleError);
+        signal.removeEventListener('abort', handleAbort);
+      };
+      const finish = (callback: () => void) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        callback();
+      };
+      const handleReady = () => finish(resolve);
+      const handleError = () => finish(() => reject(new Error(getVideoErrorMessage(video, 'Não foi possível decodificar o frame deste vídeo.'))));
+      const handleAbort = () => finish(() => reject(createAbortError()));
+      video.addEventListener('loadeddata', handleReady, { once: true });
+      video.addEventListener('canplay', handleReady, { once: true });
+      video.addEventListener('error', handleError, { once: true });
+      signal.addEventListener('abort', handleAbort, { once: true });
+      throwIfAborted(signal);
+    });
+  }
+
   await new Promise<void>((resolve, reject) => {
     let settled = false;
+    let frameRequest = 0;
+    const timeout = window.setTimeout(() => finish(() => reject(new Error('O navegador não conseguiu preparar o frame do vídeo.'))), 5000);
+    const cleanup = () => {
+      window.clearTimeout(timeout);
+      if (frameRequest) window.cancelAnimationFrame(frameRequest);
+      video.removeEventListener('error', handleError);
+      signal.removeEventListener('abort', handleAbort);
+    };
     const finish = (callback: () => void) => {
       if (settled) return;
       settled = true;
-      window.clearTimeout(timeout);
-      video.removeEventListener('error', handleError);
+      cleanup();
       callback();
     };
-    const handleError = () => finish(() => reject(new Error('Não foi possível decodificar o frame deste vídeo.')));
+    const handleError = () => finish(() => reject(new Error(getVideoErrorMessage(video, 'Não foi possível decodificar o frame deste vídeo.'))));
+    const handleAbort = () => finish(() => reject(createAbortError()));
     const handleFrame = () => {
-      if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
-        window.requestAnimationFrame(handleFrame);
-        return;
-      }
-      finish(resolve);
+      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) finish(resolve);
+      else frameRequest = window.requestAnimationFrame(handleFrame);
     };
-    const timeout = window.setTimeout(() => finish(() => reject(new Error('O navegador não conseguiu preparar o frame do vídeo.'))), 3000);
 
     video.addEventListener('error', handleError, { once: true });
-    if (videoWithFrameCallback.requestVideoFrameCallback) {
-      videoWithFrameCallback.requestVideoFrameCallback(handleFrame);
-    } else {
-      window.requestAnimationFrame(() => window.requestAnimationFrame(handleFrame));
-    }
+    signal.addEventListener('abort', handleAbort, { once: true });
+    throwIfAborted(signal);
+    if (videoWithFrameCallback.requestVideoFrameCallback) videoWithFrameCallback.requestVideoFrameCallback(handleFrame);
+    frameRequest = window.requestAnimationFrame(() => {
+      frameRequest = window.requestAnimationFrame(handleFrame);
+    });
   });
 }
 
-async function captureVideoFrames(objectUrl: string): Promise<FrameCandidate[]> {
+function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error('O navegador não conseguiu gerar a miniatura do frame.'));
+    }, 'image/jpeg', 0.88);
+  });
+}
+
+async function captureVideoFrame(video: HTMLVideoElement, time: number, index: number, signal: AbortSignal): Promise<FrameCandidate> {
+  throwIfAborted(signal);
+  await seekVideo(video, time, signal);
+  await waitForDecodedVideoFrame(video, signal);
+  if (video.videoWidth <= 0 || video.videoHeight <= 0) {
+    throw new Error('O navegador não conseguiu decodificar as dimensões deste vídeo.');
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 540;
+  canvas.height = 960;
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('O navegador não disponibilizou o Canvas para capturar o frame.');
+  const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
+  const drawnWidth = video.videoWidth * scale;
+  const drawnHeight = video.videoHeight * scale;
+  context.drawImage(video, (canvas.width - drawnWidth) / 2, (canvas.height - drawnHeight) / 2, drawnWidth, drawnHeight);
+  const blob = await canvasToBlob(canvas);
+  return { id: `frame-${index + 1}`, time, imageUrl: URL.createObjectURL(blob) };
+}
+
+async function captureVideoFrames(
+  objectUrl: string,
+  onProgress: (progress: ProcessingProgress) => void,
+  signal: AbortSignal,
+  onCenterReady: (candidate: FrameCandidate) => void,
+  registerFrameUrl: (url: string) => void,
+): Promise<FrameCandidate[]> {
   const video = document.createElement('video');
-  video.preload = 'auto';
+  video.preload = 'metadata';
   video.muted = true;
   video.playsInline = true;
-  video.src = objectUrl;
-  await waitForMetadata(video);
-  const times = getCandidateFrameTimes(video.duration);
-  if (!times.length) throw new Error('O vídeo não possui uma duração válida.');
+  video.setAttribute('playsinline', '');
+  video.setAttribute('webkit-playsinline', '');
+  video.setAttribute('aria-hidden', 'true');
+  video.style.position = 'fixed';
+  video.style.left = '-10000px';
+  video.style.width = '1px';
+  video.style.height = '1px';
+  video.style.opacity = '0';
+  document.body.appendChild(video);
 
-  const candidates: FrameCandidate[] = [];
-  for (const [index, time] of times.entries()) {
-    await seekVideo(video, time);
-    await waitForDecodedVideoFrame(video);
-    if (video.videoWidth <= 0 || video.videoHeight <= 0) {
-      throw new Error('O navegador não conseguiu decodificar as dimensões deste vídeo.');
+  try {
+    video.src = objectUrl;
+    video.load();
+    await waitForMetadata(video, signal);
+    const durationError = validateVideoDuration(video.duration);
+    if (durationError) throw new Error(durationError);
+    const times = getCandidateFrameTimes(video.duration);
+    if (!times.length) throw new Error('O vídeo não possui uma duração válida.');
+
+    const candidates: (FrameCandidate | undefined)[] = [];
+    const order = [1, 0, 2].filter((index) => Boolean(times[index] !== undefined));
+    onProgress({ completed: 0, total: order.length, label: 'Preparando o frame central…' });
+
+    for (const index of order) {
+      throwIfAborted(signal);
+      let candidate: FrameCandidate;
+      try {
+        candidate = await captureVideoFrame(video, times[index], index, signal);
+      } catch (captureError) {
+        if (index !== 1 || times[index] <= 0) {
+          if (signal.aborted) throw createAbortError();
+          onProgress({ completed: candidates.filter(Boolean).length, total: order.length, label: 'Frame alternativo indisponível; mantendo o frame central.' });
+          continue;
+        }
+        try {
+          candidate = await captureVideoFrame(video, 0, index, signal);
+        } catch {
+          throw captureError;
+        }
+      }
+
+      registerFrameUrl(candidate.imageUrl);
+      candidates[index] = candidate;
+      const completed = candidates.filter(Boolean).length;
+      if (index === 1) {
+        onCenterReady(candidate);
+        onProgress({ completed, total: order.length, label: 'Frame central pronto. Preparando alternativas…' });
+      } else {
+        onProgress({ completed, total: order.length, label: `Frame alternativo ${completed} de ${order.length} pronto…` });
+      }
     }
-    const canvas = document.createElement('canvas');
-    canvas.width = 540;
-    canvas.height = 960;
-    const context = canvas.getContext('2d');
-    if (!context) throw new Error('O navegador não disponibilizou o Canvas para capturar o frame.');
-    const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
-    const drawnWidth = video.videoWidth * scale;
-    const drawnHeight = video.videoHeight * scale;
-    context.drawImage(video, (canvas.width - drawnWidth) / 2, (canvas.height - drawnHeight) / 2, drawnWidth, drawnHeight);
-    candidates.push({ id: `frame-${index + 1}`, time, dataUrl: canvas.toDataURL('image/jpeg', 0.92) });
+
+    const readyCandidates = candidates.filter((candidate): candidate is FrameCandidate => Boolean(candidate));
+    if (!readyCandidates.length) throw new Error('O navegador não conseguiu gerar um frame deste vídeo.');
+    return readyCandidates;
+  } finally {
+    video.removeAttribute('src');
+    video.load();
+    video.remove();
   }
-  video.removeAttribute('src');
-  video.load();
-  return candidates;
 }
 
 function formatTime(seconds: number) {
@@ -151,6 +297,8 @@ function formatTime(seconds: number) {
 export default function CoverStudio() {
   const inputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
+  const frameUrlsRef = useRef<string[]>([]);
+  const processingControllerRef = useRef<AbortController | null>(null);
   const [stage, setStage] = useState<StageId>('media');
   const [mediaKind, setMediaKind] = useState<MediaKind | null>(null);
   const [fileName, setFileName] = useState('');
@@ -163,10 +311,8 @@ export default function CoverStudio() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => () => {
-    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
-  }, []);
+  const [processingMedia, setProcessingMedia] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState<ProcessingProgress>({ completed: 0, total: 3, label: '' });
 
   const clearObjectUrl = () => {
     if (objectUrlRef.current) {
@@ -175,42 +321,103 @@ export default function CoverStudio() {
     }
   };
 
+  const clearFrameUrls = () => {
+    for (const frameUrl of frameUrlsRef.current) URL.revokeObjectURL(frameUrl);
+    frameUrlsRef.current = [];
+  };
+
+  useEffect(() => () => {
+    processingControllerRef.current?.abort();
+    clearObjectUrl();
+    clearFrameUrls();
+  }, []);
+
+  const resetMediaState = () => {
+    clearObjectUrl();
+    clearFrameUrls();
+    setStage('media');
+    setMediaKind(null);
+    setFileName('');
+    setImageUrl('');
+    setFrames([]);
+    setSelectedFrameId('');
+    setProcessingMedia(false);
+    setBusy(false);
+    if (inputRef.current) inputRef.current.value = '';
+  };
+
   const handleFile = async (file: File | undefined) => {
     setError('');
     setNotice('');
     if (!file) return;
-    if (!file.type.startsWith('video/') && !file.type.startsWith('image/')) {
-      setError('Selecione um vídeo ou uma imagem compatível.');
+
+    processingControllerRef.current?.abort();
+    resetMediaState();
+    const validationError = validateMediaFile(file);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
-    clearObjectUrl();
     const objectUrl = URL.createObjectURL(file);
     objectUrlRef.current = objectUrl;
+    const isVideo = file.type.startsWith('video/');
     setFileName(file.name);
-    setMediaKind(file.type.startsWith('video/') ? 'video' : 'image');
-    setFrames([]);
-    setSelectedFrameId('');
+    setMediaKind(isVideo ? 'video' : 'image');
     setBusy(true);
 
-    try {
-      if (file.type.startsWith('video/')) {
-        const candidates = await captureVideoFrames(objectUrl);
-        setFrames(candidates);
-        setSelectedFrameId(candidates[1]?.id ?? candidates[0].id);
-        setImageUrl(candidates[1]?.dataUrl ?? candidates[0].dataUrl);
-        clearObjectUrl();
-      } else {
-        setImageUrl(objectUrl);
-      }
+    if (!isVideo) {
+      setImageUrl(objectUrl);
       setStage('image');
-    } catch (captureError) {
+      setBusy(false);
+      setNotice('Mídia pronta para continuar.');
+      return;
+    }
+
+    const controller = new AbortController();
+    processingControllerRef.current = controller;
+    setProcessingMedia(true);
+    setProcessingProgress({ completed: 0, total: 3, label: 'Preparando o vídeo localmente…' });
+
+    try {
+      const candidates = await captureVideoFrames(
+        objectUrl,
+        setProcessingProgress,
+        controller.signal,
+        (centerCandidate) => {
+          if (controller.signal.aborted) return;
+          setFrames([centerCandidate]);
+          setSelectedFrameId(centerCandidate.id);
+          setImageUrl(centerCandidate.imageUrl);
+          setStage('image');
+          setNotice('Frame central pronto. Os frames alternativos continuam sendo preparados localmente.');
+        },
+        (frameUrl) => frameUrlsRef.current.push(frameUrl),
+      );
+      if (controller.signal.aborted) return;
+      const selectedCandidate = candidates.find((candidate) => candidate.id === 'frame-2') ?? candidates[0];
+      setFrames(candidates);
+      setSelectedFrameId(selectedCandidate.id);
+      setImageUrl(selectedCandidate.imageUrl);
+      setStage('image');
+      setNotice(candidates.length < 3 ? 'Mídia pronta para continuar; alguns frames alternativos não puderam ser gerados.' : 'Mídia pronta para continuar.');
       clearObjectUrl();
+    } catch (captureError) {
+      if (controller.signal.aborted) return;
+      clearObjectUrl();
+      clearFrameUrls();
       setMediaKind(null);
       setFileName('');
+      setImageUrl('');
+      setFrames([]);
+      setSelectedFrameId('');
       setError(captureError instanceof Error ? captureError.message : 'Não foi possível processar a mídia.');
     } finally {
-      setBusy(false);
+      if (processingControllerRef.current === controller) {
+        processingControllerRef.current = null;
+        setProcessingMedia(false);
+        setBusy(false);
+      }
     }
   };
 
@@ -223,23 +430,33 @@ export default function CoverStudio() {
     void handleFile(event.dataTransfer.files?.[0]);
   };
 
+  const cancelProcessing = () => {
+    processingControllerRef.current?.abort();
+    processingControllerRef.current = null;
+    resetMediaState();
+    setError('Processamento cancelado. Escolha o arquivo novamente.');
+  };
+
+  const retrySelection = () => {
+    setError('');
+    if (inputRef.current) {
+      inputRef.current.value = '';
+      inputRef.current.click();
+    }
+  };
+
   const replaceMedia = () => {
-    clearObjectUrl();
-    setStage('media');
-    setMediaKind(null);
-    setFileName('');
-    setImageUrl('');
-    setFrames([]);
-    setSelectedFrameId('');
+    processingControllerRef.current?.abort();
+    processingControllerRef.current = null;
+    resetMediaState();
     setCopyPosition('bottom');
     setError('');
     setNotice('');
-    if (inputRef.current) inputRef.current.value = '';
   };
 
   const selectFrame = (frame: FrameCandidate) => {
     setSelectedFrameId(frame.id);
-    setImageUrl(frame.dataUrl);
+    setImageUrl(frame.imageUrl);
     setError('');
   };
 
@@ -320,6 +537,14 @@ export default function CoverStudio() {
       </aside>
 
       <div className="cover-workspace">
+        {processingMedia && (
+          <div className="cover-status cover-processing" role="status" aria-live="polite">
+            <div className="cover-processing-copy"><strong>Preparando a mídia no navegador</strong><span>{processingProgress.label}</span></div>
+            <progress max={processingProgress.total} value={processingProgress.completed} aria-label="Progresso do processamento local" />
+            <button className="button-secondary" type="button" onClick={cancelProcessing}>Cancelar</button>
+          </div>
+        )}
+
         {stage === 'media' && (
           <div className="cover-panel-stack">
             <div className="cover-panel-heading"><span className="eyebrow">ETAPA 01</span><h3>Adicione o vídeo ou a foto</h3><p>O vídeo é opcional. Se você enviar um vídeo, o CRM separa três frames e recomenda o frame central.</p></div>
@@ -330,7 +555,6 @@ export default function CoverStudio() {
               <span>Arraste um arquivo aqui ou clique para escolher.</span>
               <small>O arquivo será usado apenas nesta sessão do navegador.</small>
             </div>
-            {busy && <p className="cover-status">Processando a mídia localmente…</p>}
           </div>
         )}
 
@@ -340,8 +564,8 @@ export default function CoverStudio() {
             <div className="cover-image-choice">
               <CoverPreview imageUrl={imageUrl} copy={copy} position={copyPosition} showSafeZone />
               <div className="cover-choice-controls">
-                <div className="cover-file-summary"><strong>{fileName}</strong><span>{mediaKind === 'video' ? 'Vídeo · 3 frames locais' : 'Imagem · recorte automático 9:16'}</span></div>
-                {frames.length > 0 && <div className="cover-frame-grid" aria-label="Frames candidatos">{frames.map((frame) => <button className={frame.id === selectedFrameId ? 'is-selected' : ''} type="button" key={frame.id} onClick={() => selectFrame(frame)} aria-pressed={frame.id === selectedFrameId}><img src={frame.dataUrl} alt={`Frame em ${formatTime(frame.time)}`} /><span>{formatTime(frame.time)}</span></button>)}</div>}
+                <div className="cover-file-summary"><strong>{fileName}</strong><span>{mediaKind === 'video' ? `Vídeo · ${frames.length || 1} frames locais` : 'Imagem · recorte automático 9:16'}</span></div>
+                {frames.length > 0 && <div className="cover-frame-grid" aria-label="Frames candidatos">{frames.map((frame) => <button className={frame.id === selectedFrameId ? 'is-selected' : ''} type="button" key={frame.id} onClick={() => selectFrame(frame)} aria-pressed={frame.id === selectedFrameId}><img src={frame.imageUrl} alt={`Frame em ${formatTime(frame.time)}`} /><span>{formatTime(frame.time)}</span></button>)}</div>}
                 <fieldset className="cover-position-picker" aria-label="Posição da copy">
                   <legend>Posição da copy</legend>
                   <p className="cover-position-help">Escolha onde a mensagem deve aparecer dentro da área segura da capa.</p>
@@ -384,7 +608,7 @@ export default function CoverStudio() {
           </div>
         )}
 
-        {error && <p className="cover-error" role="alert">{error}</p>}
+        {error && <div className="cover-error" role="alert"><span>{error}</span>{!imageUrl && <button className="button-secondary" type="button" onClick={retrySelection}>Tentar novamente</button>}</div>}
         {notice && <p className="cover-notice" role="status">{notice}</p>}
       </div>
     </section>

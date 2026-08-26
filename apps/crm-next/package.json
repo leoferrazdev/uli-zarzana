@@ -2,12 +2,13 @@
   "name": "uli-zarzana-crm",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "node server.mjs",
-    "lint": "eslint .",
-    "test": "node --experimental-strip-types --test ../../tests/cover-studio.test.mjs"
+    "lint": "eslint --ignore-pattern .next --ignore-pattern graphify-out .",
+    "test": "node --experimental-strip-types --test ../../tests/cover-studio.test.mjs ../../tests/media-validation.test.mjs"
   },
   "engines": {
     "node": ">=22 <23"
