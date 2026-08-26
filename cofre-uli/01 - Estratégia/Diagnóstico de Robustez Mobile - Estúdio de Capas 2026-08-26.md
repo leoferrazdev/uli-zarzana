@@ -100,7 +100,7 @@ O diagnóstico foi aprovado em `2026-08-26` e aplicado no CRM. A implementação
 
 ## Limite de validação
 
-O teste de codec MOV/HEVC, o fluxo completo com um arquivo de vídeo real nesta versão e o teste em dispositivo físico iOS ainda não foram realizados nesta rodada. O comportamento desses formatos permanece condicionado ao suporte do navegador; a normalização por FFmpeg segue como fase posterior, caso se torne requisito obrigatório. A validação pública confirmou a entrega do código e da interface, mas não substitui um teste físico de codec/memória em iPhone ou Android.
+O teste de codec MOV/HEVC e o teste em dispositivo físico iOS ainda não foram realizados nesta rodada. O fluxo publicado foi percorrido com um vídeo MP4 no navegador autenticado: três frames foram gerados, o frame central foi selecionado, a revisão foi aberta e o JPG foi gerado em `1080 × 1920 px`. O comportamento de MOV/HEVC permanece condicionado ao suporte do navegador; a normalização por FFmpeg segue como fase posterior, caso se torne requisito obrigatório. A validação pública não substitui um teste físico de codec/memória em iPhone ou Android.
 
 ## Riscos e limites
 
