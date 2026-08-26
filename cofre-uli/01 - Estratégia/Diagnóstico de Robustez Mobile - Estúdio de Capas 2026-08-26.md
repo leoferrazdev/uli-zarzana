@@ -8,7 +8,7 @@ tags:
   - ux-ui
   - mobile
   - conteúdo-social
-status: implementado-localmente
+status: implementado-publicado
 aliases:
   - Diagnóstico Mobile do Estúdio de Capas
 ---
@@ -94,11 +94,13 @@ O diagnóstico foi aprovado em `2026-08-26` e aplicado no CRM. A implementação
 - `tsc --noEmit`: código `0`;
 - lint focado nos arquivos alterados: código `0`, sem avisos;
 - `npm.cmd run build`: código `0`, com a rota dinâmica `/capas` compilada;
-- a validação visual pública ainda depende da conclusão do deployment automático após o push na `main`.
+- `git push origin main` publicou o commit `1ffde8f7e02fcbc44e339254f49e20c93627d2bf`; `git ls-remote` confirmou o mesmo SHA em `origin/main`;
+- `https://crm.ulizarzana.com/capas` foi recarregada após o deployment; o cabeçalho publicado contém `.cover-header-copy`, `.cover-navigation` e `.cover-title-block`, e os logs de console permaneceram sem erros ou avisos;
+- a validação responsiva publicada em `320`, `360`, `375`, `390`, `414`, `768`, `1024` e `1440 px` confirmou `horizontalOverflow: false`, título visível e navegação separada da identificação em todas as larguras.
 
 ## Limite de validação
 
-O teste de codec MOV/HEVC e o teste em dispositivo físico iOS ainda não foram realizados. O comportamento desses formatos permanece condicionado ao suporte do navegador; a normalização por FFmpeg segue como fase posterior, caso se torne requisito obrigatório.
+O teste de codec MOV/HEVC, o fluxo completo com um arquivo de vídeo real nesta versão e o teste em dispositivo físico iOS ainda não foram realizados nesta rodada. O comportamento desses formatos permanece condicionado ao suporte do navegador; a normalização por FFmpeg segue como fase posterior, caso se torne requisito obrigatório. A validação pública confirmou a entrega do código e da interface, mas não substitui um teste físico de codec/memória em iPhone ou Android.
 
 ## Riscos e limites
 
