@@ -1,0 +1,48 @@
+name: Deploy bio static
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "web/bio/**"
+      - "web/assets/bio.css"
+      - "web/assets/bio.js"
+      - ".github/workflows/deploy-bio-static.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-bio-static
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Publish /bio to ulizarzana.com
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble scoped release
+        shell: bash
+        run: |
+          mkdir -p .deploy-bio/bio .deploy-bio/assets
+          cp web/bio/index.html .deploy-bio/bio/index.html
+          cp web/assets/bio.css .deploy-bio/assets/bio.css
+          cp web/assets/bio.js .deploy-bio/assets/bio.js
+
+      - name: Sync only bio files over FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.CRM_FTP_SERVER }}
+          username: ${{ secrets.CRM_FTP_USERNAME }}
+          password: ${{ secrets.CRM_FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: ./.deploy-bio/
+          server-dir: ./
+          state-name: .ftp-state-bio.json
+          dangerous-clean-slate: false
+          exclude: |
+            **/.DS_Store
+            **/.ftp-state-bio.json
