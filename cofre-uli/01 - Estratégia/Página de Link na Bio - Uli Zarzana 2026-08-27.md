@@ -1,7 +1,7 @@
 ---
 title: Página de Link na Bio - Uli Zarzana
 date: 2026-08-27
-status: aprovado-para-implementacao
+status: implementado-publicado
 tipo: decisão-estratégica
 tags:
   - uli-zarzana
@@ -54,7 +54,12 @@ A página deve manter links reais, foco visível, áreas de toque de pelo menos 
 ## Estado da entrega
 
 - Especificação detalhada: `docs/superpowers/specs/2026-08-27-link-na-bio-uli-zarzana-design.md`.
-- Arquivos de implementação previstos: `web/bio/index.html`, `web/assets/bio.css` e `web/assets/bio.js`.
+- Arquivos implementados: `web/bio/index.html`, `web/assets/bio.css` e `web/assets/bio.js`.
+- Contrato local: `tests/validate-bio-page.ps1` aprovado; sintaxe de `web/assets/bio.js` aprovada.
+- Validação responsiva real em Chrome headless: 320, 360, 375, 390, 414, 768, 1024 e 1440 px; três CTAs, imagem carregada, título visível e sem overflow horizontal em todas as larguras.
+- Tracking local validado: o CTA de aplicação emite `uli_bio_cta_click`, `cta_aplicacao`, destino e UTMs no `dataLayer`.
+- Git: implementação em `5e08ac4` e publicação automatizada por FTP em `0731190`, ambos na `main` e enviados para `origin/main`.
+- FTP: workflow `Deploy bio static`, execução `33083409959`, concluída com sucesso. Foram enviados somente `bio/index.html`, `assets/bio.css` e `assets/bio.js` para a raiz pública, sem limpeza do diretório.
+- Verificação pública: `https://ulizarzana.com/bio/`, `https://ulizarzana.com/bio/index.html`, `https://ulizarzana.com/assets/bio.css` e `https://ulizarzana.com/assets/bio.js` retornaram HTTP 200 e conteúdo atualizado.
+- Publicação futura: alterações em `web/bio/**`, `web/assets/bio.css` ou `web/assets/bio.js` na `main` acionam automaticamente o mesmo workflow FTP.
 - O link do WhatsApp é provisório e deverá ser substituído antes da divulgação pública definitiva.
-- A implementação, publicação FTP e verificação pública ainda não foram executadas nesta etapa.
-
