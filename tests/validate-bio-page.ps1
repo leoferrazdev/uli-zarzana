@@ -41,7 +41,7 @@ $js = Read-ProjectFile 'web/assets/bio.js'
   'Link provisório de demonstração'
 ) | ForEach-Object { Assert-Contains $html $_ "HTML" }
 
-Assert-Contains $html '<h1>' 'um único título principal'
+Assert-Contains $html '<h1 id="bio-title">' 'um único título principal'
 if (($html | Select-String -Pattern '<h1\b' -AllMatches).Matches.Count -ne 1) {
   throw 'Contrato inválido: a página deve ter exatamente um h1'
 }
@@ -61,9 +61,7 @@ if (($html | Select-String -Pattern '<h1\b' -AllMatches).Matches.Count -ne 1) {
 @(
   'uli_bio_cta_click',
   'window.dataLayer',
-  'cta_mentoria',
-  'cta_aplicacao',
-  'cta_whatsapp',
+  "getAttribute('data-bio-cta')",
   'navigator.sendBeacon'
 ) | ForEach-Object { Assert-Contains $js $_ "JavaScript de tracking" }
 
