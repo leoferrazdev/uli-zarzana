@@ -55,8 +55,14 @@ if (($html | Select-String -Pattern '<h1\b' -AllMatches).Matches.Count -ne 1) {
   ':focus-visible',
   'prefers-reduced-motion',
   'overflow-x: hidden',
+  'flex: 0 1 600px',
+  'max-width: 600px',
   '@media (min-width: 768px)'
 ) | ForEach-Object { Assert-Contains $css $_ "CSS" }
+
+if ($css -notmatch 'body\s*\{[^}]*min-width:\s*0;') {
+  throw 'Contrato inválido: o body deve aceitar a largura disponível sem overflow no viewport mínimo'
+}
 
 @(
   'uli_bio_cta_click',
