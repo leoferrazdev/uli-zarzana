@@ -57,9 +57,11 @@ A página deve manter links reais, foco visível, áreas de toque de pelo menos 
 - Arquivos implementados: `web/bio/index.html`, `web/assets/bio.css` e `web/assets/bio.js`.
 - Contrato local: `tests/validate-bio-page.ps1` aprovado; sintaxe de `web/assets/bio.js` aprovada.
 - Validação responsiva real em Chrome headless: 320, 360, 375, 390, 414, 768, 1024 e 1440 px; três CTAs, imagem carregada, título visível e sem overflow horizontal em todas as larguras.
+- Refinamento desktop aplicado após inspeção visual: a composição passou a usar uma coluna central de até 600 px, preservando medida de leitura e evitando CTAs estendidos por toda a tela. O limite mínimo de 320 px também foi corrigido na origem, removendo `min-width` rígido do `body`.
+- Revalidação estrutural após o refinamento: sem overflow real em 320, 360, 375, 390, 414, 768, 1024 e 1440 px; a coluna mede 600 px no desktop e todos os elementos permanecem dentro do viewport.
 - Tracking local validado: o CTA de aplicação emite `uli_bio_cta_click`, `cta_aplicacao`, destino e UTMs no `dataLayer`.
-- Git: implementação em `5e08ac4` e publicação automatizada por FTP em `0731190`, ambos na `main` e enviados para `origin/main`.
-- FTP: workflow `Deploy bio static`, execução `33083409959`, concluída com sucesso. Foram enviados somente `bio/index.html`, `assets/bio.css` e `assets/bio.js` para a raiz pública, sem limpeza do diretório.
+- Git: implementação em `5e08ac4`, automação em `0731190`, correção responsiva em `2d0eeba` e normalização do host FTP em `bebf5c7`, todos na `main` e enviados para `origin/main`.
+- FTP: workflow `Deploy bio static`, execução final `33129509663`, concluída com sucesso. Foram enviados somente `bio/index.html`, `assets/bio.css` e `assets/bio.js` para a raiz pública, sem limpeza do diretório.
 - Verificação pública: `https://ulizarzana.com/bio/`, `https://ulizarzana.com/bio/index.html`, `https://ulizarzana.com/assets/bio.css` e `https://ulizarzana.com/assets/bio.js` retornaram HTTP 200 e conteúdo atualizado.
 - Publicação futura: alterações em `web/bio/**`, `web/assets/bio.css` ou `web/assets/bio.js` na `main` acionam automaticamente o mesmo workflow FTP.
 - O link do WhatsApp é provisório e deverá ser substituído antes da divulgação pública definitiva.
