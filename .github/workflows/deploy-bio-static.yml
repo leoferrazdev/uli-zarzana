@@ -34,7 +34,7 @@ jobs:
       - name: Sync only bio files over FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.CRM_FTP_SERVER }}
+          server: ftp.ulizarzana.com
           username: ${{ secrets.CRM_FTP_USERNAME }}
           password: ${{ secrets.CRM_FTP_PASSWORD }}
           protocol: ftp
