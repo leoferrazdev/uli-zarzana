@@ -56,6 +56,7 @@ A publicação foi concluída pelo deploy automático do commit `da41a55` no apl
 - endereço público definido: `https://ulizarzana.com/mentoria-entre-potencial-e-resultado/`;
 - a página pública foi criada como pacote estático em `web/mentoria-entre-potencial-e-resultado/`, sem mover ou sobrescrever as demais páginas do domínio;
 - workflow dedicado em `.github/workflows/deploy-mentorship-application.yml`, com sincronização somente da pasta da aplicação e deploy automático a cada alteração na `main`;
+- assets estáticos referenciados com versão explícita no HTML para invalidar o cache de sete dias da hospedagem após atualizações;
 - envio cross-origin feito pelo navegador para o endpoint do CRM, sem expor chave do Supabase na página pública;
 - CORS configurado no endpoint com allowlist exata para `https://ulizarzana.com` e `https://www.ulizarzana.com`, aceitando apenas `POST` e `OPTIONS` com `Content-Type`;
 - RLS permanece como proteção efetiva do banco: inserção anônima somente com termos aceitos e leitura restrita aos usuários administradores e comerciais autenticados;
@@ -106,3 +107,11 @@ Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-
 - `npm run build`: concluído com sucesso;
 - `node --check web/mentoria-entre-potencial-e-resultado/application.js`: concluído;
 - `git diff --check`: sem erros de whitespace.
+
+### Verificação pós-publicação
+
+- workflow `Deploy mentorship application` do commit `e5dc8f9`: concluído com sucesso;
+- página pública, CSS e JavaScript versionados: HTTP 200;
+- alternância claro/escuro verificada em uma nova aba publicada, sem depender do cache anterior;
+- viewport 390 × 844 verificado em produção: uma coluna, sem overflow horizontal e CTA acessível;
+- nenhum dado de aplicação foi preenchido ou enviado durante a validação.
