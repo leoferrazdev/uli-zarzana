@@ -102,7 +102,7 @@ Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-
 
 ### Verificação técnica
 
-- testes automatizados: 27 aprovados;
+- testes automatizados: 28 aprovados;
 - `npm run lint`: concluído sem erros; permanecem apenas 2 avisos preexistentes;
 - `npm run build`: concluído com sucesso;
 - `node --check web/mentoria-entre-potencial-e-resultado/application.js`: concluído;
@@ -124,3 +124,6 @@ Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-
 - a regra mobile aprovada permanece preservada, com `2.65rem` e `10ch` até 720 px;
 - verificado em 1600 × 1000 e 1440 × 900: sem overflow do título e sem alteração da composição geral;
 - verificado em 375 × 812: uma coluna e sem overflow horizontal.
+- regressão automatizada incluída para impedir o retorno do overflow no título lateral;
+- versão final dos assets publicada no commit `e4f1725`; workflow concluído com sucesso;
+- verificação pública final em 1600 × 1000: `scrollWidth` do título igual à largura útil, sem overflow horizontal da página.
