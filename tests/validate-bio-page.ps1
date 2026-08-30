@@ -44,6 +44,11 @@ $head = [regex]::Match($html, '(?is)<head>(.*?)</head>').Groups[1].Value
 ) | ForEach-Object { Assert-Contains $head $_ "rastreamento Clarity no head" }
 
 @(
+  'https://www.googletagmanager.com/gtag/js?id=G-LTYMBWVDD5',
+  "gtag('config', 'G-LTYMBWVDD5')"
+) | ForEach-Object { Assert-Contains $head $_ "rastreamento Google Analytics 4 no head" }
+
+@(
   'Conhecer a Mentoria',
   'Entrar no grupo do WhatsApp',
   'data-bio-cta="cta_mentoria"',
