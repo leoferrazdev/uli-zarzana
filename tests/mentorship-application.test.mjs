@@ -150,3 +150,9 @@ test('defines a branded dark mode toggle and mobile-safe layout', async () => {
   assert.match(styles, /min-height: 100dvh/);
   assert.match(styles, /touch-action: manipulation/);
 });
+
+test('keeps the desktop aside title inside its available column width', async () => {
+  const styles = await readFile(new URL('../web/mentoria-entre-potencial-e-resultado/application.css', import.meta.url), 'utf8');
+
+  assert.match(styles, /\.application-aside h1\s*\{[\s\S]*max-width: 100%;[\s\S]*font-size: clamp\(2\.5rem, 3vw, 3\.5rem\);/);
+});

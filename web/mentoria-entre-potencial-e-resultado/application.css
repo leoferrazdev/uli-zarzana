@@ -249,11 +249,11 @@ button:disabled { cursor: wait; opacity: .65; }
 .application-aside .eyebrow { color: var(--application-champagne); }
 
 .application-aside h1 {
-  max-width: 9ch;
+  max-width: 100%;
   margin: 2.4rem 0 1.5rem;
   color: var(--application-aside-foreground);
   font-family: var(--font-heading);
-  font-size: clamp(2.5rem, 4vw, 4.35rem);
+  font-size: clamp(2.5rem, 3vw, 3.5rem);
   letter-spacing: var(--tracking-heading);
   line-height: 1.03;
 }

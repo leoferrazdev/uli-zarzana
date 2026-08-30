@@ -115,3 +115,12 @@ Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-
 - alternância claro/escuro verificada em uma nova aba publicada, sem depender do cache anterior;
 - viewport 390 × 844 verificado em produção: uma coluna, sem overflow horizontal e CTA acessível;
 - nenhum dado de aplicação foi preenchido ou enviado durante a validação.
+
+## Correção de largura do título no desktop — 2026-08-30
+
+- evidência: em desktops largos, `Potencial` ultrapassava a área útil do painel lateral;
+- causa: a escala anterior `4vw` crescia com a viewport, embora a coluna lateral permanecesse limitada;
+- correção: o título agora usa `max-width: 100%` e escala `clamp(2.5rem, 3vw, 3.5rem)` no desktop;
+- a regra mobile aprovada permanece preservada, com `2.65rem` e `10ch` até 720 px;
+- verificado em 1600 × 1000 e 1440 × 900: sem overflow do título e sem alteração da composição geral;
+- verificado em 375 × 812: uma coluna e sem overflow horizontal.
