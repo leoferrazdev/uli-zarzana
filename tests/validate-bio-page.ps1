@@ -19,6 +19,7 @@ function Assert-Contains([string]$Content, [string]$Needle, [string]$Description
 $html = Read-ProjectFile 'web/bio/index.html'
 $css = Read-ProjectFile 'web/assets/bio.css'
 $js = Read-ProjectFile 'web/assets/bio.js'
+$head = [regex]::Match($html, '(?is)<head>(.*?)</head>').Groups[1].Value
 
 @(
   'lang="pt-BR"',
@@ -34,6 +35,13 @@ $js = Read-ProjectFile 'web/assets/bio.js'
   'alt="Retrato editorial de Uli Zarzana"',
   'Aplicação em demonstração'
 ) | ForEach-Object { Assert-Contains $html $_ "HTML" }
+
+@(
+  '<script type="text/javascript">',
+  'https://www.clarity.ms/tag/',
+  'yan9fnetv0',
+  'c[a]=c[a]||function()'
+) | ForEach-Object { Assert-Contains $head $_ "rastreamento Clarity no head" }
 
 @(
   'Conhecer a Mentoria',

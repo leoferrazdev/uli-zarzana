@@ -139,3 +139,14 @@ Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-
 - contrato da página atualizado para exigir exatamente um CTA de conversão;
 - validação local em desktop 1440 × 1000 e mobile 390 × 844: um CTA visível, centralizado e sem overflow horizontal;
 - publicação será feita pelo workflow dedicado de `/bio/`, sincronizando somente os arquivos da página.
+
+## Microsoft Clarity na página Bio — 2026-08-30
+
+> [!success] Implementação determinística
+> Foi criado no Microsoft Clarity o projeto **Uli Zarzana — Bio**, categoria **Carreira e Educação**, para observar mapas de calor e comportamento de navegação exclusivamente em `https://ulizarzana.com/bio/`.
+
+- identificador público do projeto: `yan9fnetv0`;
+- snippet oficial inserido no `<head>` de `web/bio/index.html`;
+- nenhuma resposta de formulário, credencial ou dado pessoal foi transmitido durante a instalação;
+- a publicação permanece restrita ao workflow dedicado da bio;
+- a disponibilidade dos primeiros dados depende do processamento do próprio Clarity após a publicação.
