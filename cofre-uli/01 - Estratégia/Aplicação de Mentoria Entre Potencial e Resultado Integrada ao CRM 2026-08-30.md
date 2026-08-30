@@ -7,7 +7,7 @@ tags:
   - mentoria
   - supabase
   - aplicacao
-status: aprovado-para-plano
+status: implementado
 aliases:
   - Aplicação da Mentoria Entre Potencial e Resultado
 ---
@@ -49,7 +49,7 @@ O MVP não duplicará automaticamente a aplicação na tabela `leads`. A aplica�
 - validação visual local realizada no primeiro passo, na navegação para identificação e em viewport mobile;
 - migration aplicada no projeto Supabase `uli-zarzana`: tabela confirmada, 24 colunas e 2 políticas, sem aplicações fictícias inseridas.
 
-A publicação pública permanece dependente do deploy automático do commit no aplicativo Node.js da Hostinger. A verificação pós-deploy deve confirmar a página pública e a proteção da área interna sem enviar dados reais ou fictícios.
+A publicação foi concluída pelo deploy automático do commit `da41a55` no aplicativo Node.js da Hostinger. Verificação pós-deploy: formulário público retornando HTTP 200; `/aplicacoes` redirecionando para `/login`; endpoint público rejeitando POST vazio com HTTP 400; nenhuma aplicação fictícia foi criada.
 
 ## Segurança determinada
 
