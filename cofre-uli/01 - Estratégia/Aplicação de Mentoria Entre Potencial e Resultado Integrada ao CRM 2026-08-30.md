@@ -127,3 +127,15 @@ Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-
 - regressão automatizada incluída para impedir o retorno do overflow no título lateral;
 - versão final dos assets publicada no commit `e4f1725`; workflow concluído com sucesso;
 - verificação pública final em 1600 × 1000: `scrollWidth` do título igual à largura útil, sem overflow horizontal da página.
+
+## Bio: CTA único para aplicação na mentoria — 2026-08-30
+
+> [!success] Decisão determinística
+> A página pública `/bio/` passa a ter somente uma ação de conversão: **Aplicar para a Mentoria**. A aplicação foi elevada à ação visualmente primária; os destinos “Conhecer a Mentoria” e “Entrar no grupo do WhatsApp” foram removidos.
+
+- destino preservado: `https://form.respondi.app/eKphXGUV` com parâmetros de atribuição da bio;
+- perfil, headline, identificação do Instagram e identidade visual foram preservados;
+- a observação de rodapé foi atualizada para não mencionar um grupo que não está mais disponível na página;
+- contrato da página atualizado para exigir exatamente um CTA de conversão;
+- validação local em desktop 1440 × 1000 e mobile 390 × 844: um CTA visível, centralizado e sem overflow horizontal;
+- publicação será feita pelo workflow dedicado de `/bio/`, sincronizando somente os arquivos da página.

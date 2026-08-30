@@ -28,18 +28,24 @@ $js = Read-ProjectFile 'web/assets/bio.js'
   'src="../assets/bio.js"',
   'Experiência que vira autoridade.',
   'Estratégia para profissionais e empresários experientes avançarem com clareza, influência e consistência.',
-  'Conhecer a Mentoria',
   'Aplicar para a Mentoria',
-  'Entrar no grupo do WhatsApp',
-  'https://ulizarzana.com/?utm_source=instagram&amp;utm_medium=bio&amp;utm_campaign=uli_bio&amp;utm_content=cta_mentoria',
   'https://form.respondi.app/eKphXGUV?utm_source=instagram&amp;utm_medium=bio&amp;utm_campaign=uli_bio&amp;utm_content=cta_aplicacao',
-  'https://chat.whatsapp.com/ULI-GRUPO-PROVISORIO?utm_source=instagram&amp;utm_medium=bio&amp;utm_campaign=uli_bio&amp;utm_content=cta_whatsapp',
-  'data-bio-cta="cta_mentoria"',
   'data-bio-cta="cta_aplicacao"',
-  'data-bio-cta="cta_whatsapp"',
   'alt="Retrato editorial de Uli Zarzana"',
-  'Link provisório de demonstração'
+  'Aplicação em demonstração'
 ) | ForEach-Object { Assert-Contains $html $_ "HTML" }
+
+@(
+  'Conhecer a Mentoria',
+  'Entrar no grupo do WhatsApp',
+  'data-bio-cta="cta_mentoria"',
+  'data-bio-cta="cta_whatsapp"',
+  'chat.whatsapp.com/ULI-GRUPO-PROVISORIO'
+) | ForEach-Object {
+  if ($html.IndexOf($_, [System.StringComparison]::Ordinal) -ge 0) {
+    throw "Contrato inválido: CTA removido ainda presente ($_ )"
+  }
+}
 
 Assert-Contains $html '<h1 id="bio-title">' 'um único título principal'
 if (($html | Select-String -Pattern '<h1\b' -AllMatches).Matches.Count -ne 1) {
@@ -72,9 +78,13 @@ if ($css -notmatch 'body\s*\{[^}]*min-width:\s*0;') {
 ) | ForEach-Object { Assert-Contains $js $_ "JavaScript de tracking" }
 
 $ctaOrder = [regex]::Matches($html, 'data-bio-cta="([^"]+)"') | ForEach-Object { $_.Groups[1].Value }
-$expectedOrder = @('cta_mentoria', 'cta_aplicacao', 'cta_whatsapp')
+$expectedOrder = @('cta_aplicacao')
 if (($ctaOrder -join '|') -ne ($expectedOrder -join '|')) {
   throw "Contrato inválido: ordem dos CTAs encontrada [$($ctaOrder -join ', ')]"
+}
+
+if (($ctaOrder | Measure-Object).Count -ne 1) {
+  throw "Contrato inválido: a página deve exibir exatamente um CTA de conversão"
 }
 
 Write-Output 'Bio page contract: PASS'
