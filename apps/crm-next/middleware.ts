@@ -3,6 +3,15 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
+  const publicPaths = [
+    '/aplicacao/mentoria-entre-potencial-e-resultado',
+    '/api/aplicacoes/mentoria-entre-potencial-e-resultado',
+  ];
+
+  if (publicPaths.includes(request.nextUrl.pathname)) {
+    return response;
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 

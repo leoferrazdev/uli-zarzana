@@ -8,7 +8,7 @@
     "build": "next build --webpack",
     "start": "node server.mjs",
     "lint": "eslint --ignore-pattern .next --ignore-pattern graphify-out .",
-    "test": "node --experimental-strip-types --test ../../tests/cover-studio.test.mjs ../../tests/media-validation.test.mjs"
+    "test": "node --experimental-strip-types --test ../../tests/cover-studio.test.mjs ../../tests/media-validation.test.mjs ../../tests/mentorship-application.test.mjs"
   },
   "engines": {
     "node": ">=22 <23"

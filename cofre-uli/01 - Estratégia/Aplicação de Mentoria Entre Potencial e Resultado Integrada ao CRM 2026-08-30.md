@@ -37,6 +37,20 @@ As respostas serão colunas normalizadas, incluindo identificação, contexto pr
 
 O MVP não duplicará automaticamente a aplicação na tabela `leads`. A aplicação será consultada diretamente no CRM para preservar todas as respostas e evitar divergência entre registros.
 
+## Implementação realizada
+
+- rota pública: `/aplicacao/mentoria-entre-potencial-e-resultado`;
+- endpoint server-side: `/api/aplicacoes/mentoria-entre-potencial-e-resultado`;
+- wizard responsivo em oito etapas, com validação por etapa e envio único ao final;
+- migration versionada em `supabase/migrations/202608300001_mentorship_application.sql`;
+- fila autenticada em `/aplicacoes` e detalhe integral em `/aplicacoes/[id]`;
+- indicador de aplicações recebidas no dia adicionado à Visão Geral;
+- testes automatizados: 24 aprovados; build de produção Next.js concluído;
+- validação visual local realizada no primeiro passo, na navegação para identificação e em viewport mobile;
+- migration aplicada no projeto Supabase `uli-zarzana`: tabela confirmada, 24 colunas e 2 políticas, sem aplicações fictícias inseridas.
+
+A publicação pública permanece dependente do deploy automático do commit no aplicativo Node.js da Hostinger. A verificação pós-deploy deve confirmar a página pública e a proteção da área interna sem enviar dados reais ou fictícios.
+
 ## Segurança determinada
 
 - rota pública limitada à aplicação e ao POST de submissão;
