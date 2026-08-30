@@ -85,3 +85,24 @@ Avaliação, aprovação, reprovação, conversão em lead, mensagens automátic
 ## Especificação relacionada
 
 Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-08-30-aplicacao-mentoria-entre-potencial-e-resultado-design.md`.
+
+## Refinamento visual: dark mode e mobile — 2026-08-30
+
+> [!success] Decisão determinística
+> A aplicação pública mantém a identidade editorial da Uli nos dois temas e oferece uma leitura confortável em telas pequenas, sem persistir respostas ou preferências no navegador.
+
+- incluído alternador explícito de tema claro/escuro no cabeçalho, com `aria-pressed`, rótulo textual e ícones SVG;
+- o tema inicial acompanha a preferência do sistema (`prefers-color-scheme: dark`) e pode ser alterado durante a sessão;
+- dark mode construído com tokens semânticos de tons quentes da marca, preservando contraste, campo de entrada, estados de foco, progresso e CTAs;
+- aplicação do padrão responsivo mobile-first, com layout em uma coluna até 720 px, áreas de toque adequadas e sem overflow horizontal;
+- safe area, tipografia, espaçamento e CTA foram conferidos em viewport 390 × 844, nos dois temas;
+- a etapa 2 do formulário também foi conferida no dark mode, incluindo inputs, opções, barra de progresso e navegação;
+- os dados do formulário continuam somente em memória até o envio final; nenhuma resposta de teste foi transmitida.
+
+### Verificação técnica
+
+- testes automatizados: 27 aprovados;
+- `npm run lint`: concluído sem erros; permanecem apenas 2 avisos preexistentes;
+- `npm run build`: concluído com sucesso;
+- `node --check web/mentoria-entre-potencial-e-resultado/application.js`: concluído;
+- `git diff --check`: sem erros de whitespace.

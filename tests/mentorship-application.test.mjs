@@ -136,3 +136,17 @@ test('adds explicit CORS handling for the public main-domain origin', async () =
   assert.match(route, /Access-Control-Allow-Methods/);
   assert.match(route, /Vary.*Origin/);
 });
+
+test('defines a branded dark mode toggle and mobile-safe layout', async () => {
+  const page = await readFile(new URL('../web/mentoria-entre-potencial-e-resultado/index.html', import.meta.url), 'utf8');
+  const script = await readFile(new URL('../web/mentoria-entre-potencial-e-resultado/application.js', import.meta.url), 'utf8');
+  const styles = await readFile(new URL('../web/mentoria-entre-potencial-e-resultado/application.css', import.meta.url), 'utf8');
+
+  assert.match(page, /data-theme-toggle/);
+  assert.match(page, /Alternar tema/);
+  assert.match(script, /data-theme/);
+  assert.match(styles, /\[data-theme="dark"\]/);
+  assert.match(styles, /prefers-color-scheme: dark/);
+  assert.match(styles, /min-height: 100dvh/);
+  assert.match(styles, /touch-action: manipulation/);
+});

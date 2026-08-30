@@ -38,6 +38,22 @@
   const progress = document.querySelector('[data-application-progress]');
   const progressText = document.querySelector('[data-application-progress-text]');
   const progressTrack = document.querySelector('.progress-track');
+  const themeToggle = document.querySelector('[data-theme-toggle]');
+  const themeLabel = document.querySelector('[data-theme-label]');
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+
+  function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    themeToggle.setAttribute('aria-pressed', String(theme === 'dark'));
+    themeLabel.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
+    themeColor.setAttribute('content', theme === 'dark' ? '#211a18' : '#f7f0e7');
+  }
+
+  const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(systemPrefersDark ? 'dark' : 'light');
+  themeToggle.addEventListener('click', () => {
+    applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+  });
 
   function escapeHtml(value) {
     return String(value)
