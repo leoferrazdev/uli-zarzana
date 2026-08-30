@@ -157,3 +157,28 @@ Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-
 - `https://ulizarzana.com/bio/`: HTTP 200 com o identificador do projeto presente no `<head>`;
 - navegador encontrou a tag `https://www.clarity.ms/tag/yan9fnetv0` e o recurso `clarity.js`;
 - verificação funcional preservou um único CTA de aplicação e ausência de overflow horizontal.
+
+## Google Analytics 4 na página Bio — 2026-08-30
+
+> [!success] Implementação determinística
+> Foi criada a conta **Uli Zarzana**, com a propriedade **Uli Zarzana — Bio** e um fluxo web para `ulizarzana.com`. A tag foi instalada somente na página `/bio/` para acompanhar acessos, navegação e cliques da página.
+
+- conta: `Uli Zarzana`;
+- propriedade: `Uli Zarzana — Bio`;
+- fluxo web: `Uli Zarzana — Bio`;
+- identificador do fluxo: `15528858899`;
+- Measurement ID: `G-LTYMBWVDD5`;
+- fuso horário: `São Paulo`; moeda: `BRL`;
+- Enhanced Measurement permaneceu habilitado, incluindo visualizações de página, rolagens e cliques externos;
+- o evento existente `uli_bio_cta_click` continua sendo enviado ao GA4 quando `gtag` está disponível;
+- nenhuma resposta de formulário, credencial ou dado pessoal foi enviado durante a instalação;
+- a coleta inicial pode levar até 48 horas para aparecer no painel do Google Analytics.
+
+### Verificação pós-publicação
+
+- workflow `Deploy bio static` do commit `94c73c5`: concluído com sucesso;
+- `https://ulizarzana.com/bio/`: HTTP 200;
+- tag GA4 presente no `<head>` com `G-LTYMBWVDD5`;
+- tag do Microsoft Clarity preservada;
+- exatamente um CTA de aplicação preservado;
+- página sem overflow horizontal na verificação pública.
