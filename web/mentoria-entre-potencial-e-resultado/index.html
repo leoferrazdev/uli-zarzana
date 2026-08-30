@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#332a26">
+  <meta name="description" content="Aplicação para a Mentoria Entre Potencial e Resultado, de Uli Zarzana.">
+  <title>Aplicação · Entre Potencial e Resultado — Uli Zarzana</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/design-tokens.css">
+  <link rel="stylesheet" href="application.css">
+  <script src="application.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#mentorship-application">Ir para a aplicação</a>
+  <div class="application-page">
+    <header class="application-header">
+      <a class="brand-lockup" href="https://ulizarzana.com/" aria-label="Voltar para ulizarzana.com">
+        <span class="brand-mark" aria-hidden="true">UZ</span>
+        <span>
+          <strong>Uli Zarzana</strong>
+          <small>CARREIRA · LIDERANÇA · ASCENSÃO</small>
+        </span>
+      </a>
+      <span class="header-note">APLICAÇÃO · 2026</span>
+    </header>
+
+    <main id="mentorship-application" class="application-layout">
+      <aside class="application-aside">
+        <div>
+          <p class="eyebrow">MENTORIA · ENTRE POTENCIAL E RESULTADO</p>
+          <h1>Potencial que encontra direção.</h1>
+          <p class="aside-lead">Uma conversa estruturada para entender seu momento, seu próximo objetivo e a disposição necessária para transformar intenção em movimento.</p>
+        </div>
+        <div class="aside-footer">
+          <p><strong>Uma aplicação cuidadosa.</strong><br>Leva cerca de 8 minutos e suas respostas só são enviadas ao concluir.</p>
+          <p class="aside-privacy">As informações são analisadas individualmente por Uli Zarzana.</p>
+        </div>
+      </aside>
+
+      <section class="application-panel" aria-labelledby="application-step-title">
+        <div class="application-panel__topline">
+          <span class="eyebrow">APLICAÇÃO INDIVIDUAL</span>
+          <span data-application-progress-text>Etapa 1 de 8</span>
+        </div>
+        <div class="progress-track" aria-label="Progresso da aplicação" role="progressbar" aria-valuemin="1" aria-valuemax="8" aria-valuenow="1">
+          <span data-application-progress></span>
+        </div>
+
+        <form id="application-form" novalidate>
+          <div data-application-content></div>
+          <div class="form-message" data-application-message role="status" aria-live="polite"></div>
+        </form>
+
+        <noscript>
+          <p class="noscript-message">Ative o JavaScript para preencher a aplicação em etapas.</p>
+        </noscript>
+      </section>
+    </main>
+
+    <footer class="application-footer">
+      <span>Uli Zarzana</span>
+      <span>Entre potencial e resultado</span>
+      <a href="https://ulizarzana.com/" rel="noopener">ulizarzana.com</a>
+    </footer>
+  </div>
+</body>
+</html>

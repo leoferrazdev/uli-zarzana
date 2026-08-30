@@ -1,0 +1,44 @@
+name: Deploy mentorship application
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'web/mentoria-entre-potencial-e-resultado/**'
+      - '.github/workflows/deploy-mentorship-application.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-mentorship-application
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Publish mentorship application to ulizarzana.com
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble scoped release
+        shell: bash
+        run: |
+          mkdir -p .deploy-mentorship/mentoria-entre-potencial-e-resultado
+          cp -R web/mentoria-entre-potencial-e-resultado/. .deploy-mentorship/mentoria-entre-potencial-e-resultado/
+
+      - name: Sync application files over FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.ulizarzana.com
+          username: ${{ secrets.CRM_FTP_USERNAME }}
+          password: ${{ secrets.CRM_FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: ./.deploy-mentorship/
+          server-dir: ./
+          state-name: .ftp-state-mentorship.json
+          dangerous-clean-slate: false
+          exclude: |
+            **/.DS_Store
+            **/.ftp-state-mentorship.json

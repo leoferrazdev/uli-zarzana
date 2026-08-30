@@ -51,6 +51,16 @@ O MVP não duplicará automaticamente a aplicação na tabela `leads`. A aplica�
 
 A publicação foi concluída pelo deploy automático do commit `da41a55` no aplicativo Node.js da Hostinger. Verificação pós-deploy: formulário público retornando HTTP 200; `/aplicacoes` redirecionando para `/login`; endpoint público rejeitando POST vazio com HTTP 400; nenhuma aplicação fictícia foi criada.
 
+## Publicação no domínio principal
+
+- endereço público definido: `https://ulizarzana.com/mentoria-entre-potencial-e-resultado/`;
+- a página pública foi criada como pacote estático em `web/mentoria-entre-potencial-e-resultado/`, sem mover ou sobrescrever as demais páginas do domínio;
+- workflow dedicado em `.github/workflows/deploy-mentorship-application.yml`, com sincronização somente da pasta da aplicação e deploy automático a cada alteração na `main`;
+- envio cross-origin feito pelo navegador para o endpoint do CRM, sem expor chave do Supabase na página pública;
+- CORS configurado no endpoint com allowlist exata para `https://ulizarzana.com` e `https://www.ulizarzana.com`, aceitando apenas `POST` e `OPTIONS` com `Content-Type`;
+- RLS permanece como proteção efetiva do banco: inserção anônima somente com termos aceitos e leitura restrita aos usuários administradores e comerciais autenticados;
+- a validação de produção não envia uma aplicação válida: o preflight e o POST vazio são usados apenas para confirmar CORS e rejeição segura.
+
 ## Segurança determinada
 
 - rota pública limitada à aplicação e ao POST de submissão;

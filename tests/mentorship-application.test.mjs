@@ -109,3 +109,30 @@ test('defines authenticated CRM application list and detail routes', async () =>
   assert.match(detail, /Todas as respostas/);
   assert.match(detail, /mentoria_entre_potencial_resultado_applications/);
 });
+
+test('defines the static main-domain application package and its scoped deployment', async () => {
+  const page = await readFile(new URL('../web/mentoria-entre-potencial-e-resultado/index.html', import.meta.url), 'utf8');
+  const script = await readFile(new URL('../web/mentoria-entre-potencial-e-resultado/application.js', import.meta.url), 'utf8');
+  const styles = await readFile(new URL('../web/mentoria-entre-potencial-e-resultado/application.css', import.meta.url), 'utf8');
+  const workflow = await readFile(new URL('../.github/workflows/deploy-mentorship-application.yml', import.meta.url), 'utf8');
+
+  assert.match(page, /Mentoria Entre Potencial e Resultado/);
+  assert.match(page, /id="mentorship-application"/);
+  assert.match(script, /crm\.ulizarzana\.com\/api\/aplicacoes\/mentoria-entre-potencial-e-resultado/);
+  assert.match(script, /terms_accepted/);
+  assert.match(script, /Não enviamos suas respostas antes da etapa final/);
+  assert.match(styles, /--application-ink:\s*#332a26/);
+  assert.match(styles, /@media \(max-width: 720px\)/);
+  assert.match(workflow, /web\/mentoria-entre-potencial-e-resultado/);
+  assert.match(workflow, /server-dir: \.\//);
+});
+
+test('adds explicit CORS handling for the public main-domain origin', async () => {
+  const route = await readFile(new URL('../apps/crm-next/app/api/aplicacoes/mentoria-entre-potencial-e-resultado/route.ts', import.meta.url), 'utf8');
+
+  assert.match(route, /export async function OPTIONS/);
+  assert.match(route, /https:\/\/ulizarzana\.com/);
+  assert.match(route, /Access-Control-Allow-Origin/);
+  assert.match(route, /Access-Control-Allow-Methods/);
+  assert.match(route, /Vary.*Origin/);
+});
