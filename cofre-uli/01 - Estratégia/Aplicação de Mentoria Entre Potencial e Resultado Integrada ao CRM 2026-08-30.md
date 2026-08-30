@@ -150,3 +150,10 @@ Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-
 - nenhuma resposta de formulário, credencial ou dado pessoal foi transmitido durante a instalação;
 - a publicação permanece restrita ao workflow dedicado da bio;
 - a disponibilidade dos primeiros dados depende do processamento do próprio Clarity após a publicação.
+
+### Verificação pós-publicação
+
+- workflow `Deploy bio static` do commit `50c6a40`: concluído com sucesso;
+- `https://ulizarzana.com/bio/`: HTTP 200 com o identificador do projeto presente no `<head>`;
+- navegador encontrou a tag `https://www.clarity.ms/tag/yan9fnetv0` e o recurso `clarity.js`;
+- verificação funcional preservou um único CTA de aplicação e ausência de overflow horizontal.
