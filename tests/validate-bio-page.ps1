@@ -30,7 +30,7 @@ $head = [regex]::Match($html, '(?is)<head>(.*?)</head>').Groups[1].Value
   'Experiência que vira autoridade.',
   'Estratégia para profissionais e empresários experientes avançarem com clareza, influência e consistência.',
   'Aplicar para a Mentoria',
-  'https://form.respondi.app/eKphXGUV?utm_source=instagram&amp;utm_medium=bio&amp;utm_campaign=uli_bio&amp;utm_content=cta_aplicacao',
+  'https://ulizarzana.com/mentoria-entre-potencial-e-resultado/',
   'data-bio-cta="cta_aplicacao"',
   'alt="Retrato editorial de Uli Zarzana"',
   'Aplicação em demonstração'
