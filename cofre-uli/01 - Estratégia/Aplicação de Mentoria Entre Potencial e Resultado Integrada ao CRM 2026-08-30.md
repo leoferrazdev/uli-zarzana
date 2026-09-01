@@ -182,3 +182,16 @@ Documento técnico correspondente no repositório: `docs/superpowers/specs/2026-
 - tag do Microsoft Clarity preservada;
 - exatamente um CTA de aplicação preservado;
 - página sem overflow horizontal na verificação pública.
+
+## Atualização do destino do CTA da Bio — 2026-09-01
+
+> [!success] Decisão aplicada
+> O botão **Aplicar para a Mentoria** deixou de direcionar diretamente ao formulário externo e passou a conduzir o visitante para a página pública da mentoria.
+
+- novo destino: `https://ulizarzana.com/mentoria-entre-potencial-e-resultado/`;
+- o identificador `data-bio-cta="cta_aplicacao"` foi preservado para manter o rastreamento do clique no GA4;
+- o contrato automatizado da Bio foi atualizado para exigir o novo destino;
+- endereço anterior removido do HTML público: `https://form.respondi.app/eKphXGUV`;
+- commit publicado: `46b6243`;
+- workflow `Deploy bio static`: concluído com sucesso;
+- verificação pública: `/bio/` HTTP 200, exatamente um CTA, novo destino presente e página da mentoria HTTP 200.
